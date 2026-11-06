@@ -1,0 +1,98 @@
+{
+  "packId": "en-grammar-prepositions",
+  "lang": "en",
+  "room": "grammar-prepositions",
+  "version": 1,
+  "words": [
+    {
+      "id": "on",
+      "word": "on",
+      "ipa": "/ɑːn/",
+      "partOfSpeech": "preposition",
+      "cefr": "A1",
+      "example": "The cup is on the table.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/on.mp3",
+      "helper": {
+        "es": "sobre",
+        "vi": "trên"
+      }
+    },
+    {
+      "id": "in",
+      "word": "in",
+      "ipa": "/ɪn/",
+      "partOfSpeech": "preposition",
+      "cefr": "A1",
+      "example": "The apple is in the box.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/in.mp3",
+      "helper": {
+        "es": "en",
+        "vi": "trong"
+      }
+    },
+    {
+      "id": "under",
+      "word": "under",
+      "ipa": "/ˈʌndər/",
+      "partOfSpeech": "preposition",
+      "cefr": "A1",
+      "example": "The cup is under the table.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/under.mp3",
+      "helper": {
+        "es": "debajo de",
+        "vi": "dưới"
+      }
+    },
+    {
+      "id": "next-to",
+      "word": "next to",
+      "ipa": "/nekst tuː/",
+      "partOfSpeech": "preposition",
+      "cefr": "A1",
+      "example": "The chair is next to the table.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/next-to.mp3",
+      "helper": {
+        "es": "al lado de",
+        "vi": "bên cạnh"
+      }
+    },
+    {
+      "id": "in-front-of",
+      "word": "in front of",
+      "ipa": "/ɪn frʌnt ʌv/",
+      "partOfSpeech": "preposition",
+      "cefr": "A2",
+      "example": "The chair is in front of the door.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/in-front-of.mp3",
+      "helper": {
+        "es": "delante de",
+        "vi": "trước"
+      }
+    },
+    {
+      "id": "behind",
+      "word": "behind",
+      "ipa": "/bɪˈhaɪnd/",
+      "partOfSpeech": "preposition",
+      "cefr": "A2",
+      "example": "The chair is behind the door.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/behind.mp3",
+      "helper": {
+        "es": "detrás de",
+        "vi": "sau"
+      }
+    }
+  ]
+}

@@ -1,0 +1,362 @@
+[
+  {
+    "id": "table",
+    "locale": "en-US",
+    "text": "table",
+    "file": "audio/en-US/table.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "wall",
+    "locale": "en-US",
+    "text": "wall",
+    "file": "audio/en-US/wall.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "floor",
+    "locale": "en-US",
+    "text": "floor",
+    "file": "audio/en-US/floor.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "ceiling",
+    "locale": "en-US",
+    "text": "ceiling",
+    "file": "audio/en-US/ceiling.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "door",
+    "locale": "en-US",
+    "text": "door",
+    "file": "audio/en-US/door.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "window",
+    "locale": "en-US",
+    "text": "window",
+    "file": "audio/en-US/window.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "couch",
+    "locale": "en-US",
+    "text": "couch",
+    "file": "audio/en-US/couch.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "lamp",
+    "locale": "en-US",
+    "text": "lamp",
+    "file": "audio/en-US/lamp.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "plant",
+    "locale": "en-US",
+    "text": "plant",
+    "file": "audio/en-US/plant.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "screen",
+    "locale": "en-US",
+    "text": "screen",
+    "file": "audio/en-US/screen.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "bed",
+    "locale": "en-US",
+    "text": "bed",
+    "file": "audio/en-US/bed.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "shelf",
+    "locale": "en-US",
+    "text": "shelf",
+    "file": "audio/en-US/shelf.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "cup",
+    "locale": "en-US",
+    "text": "cup",
+    "file": "audio/en-US/cup.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "plate",
+    "locale": "en-US",
+    "text": "plate",
+    "file": "audio/en-US/plate.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "apple",
+    "locale": "en-US",
+    "text": "apple",
+    "file": "audio/en-US/apple.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "chair",
+    "locale": "en-US",
+    "text": "chair",
+    "file": "audio/en-US/chair.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "book",
+    "locale": "en-US",
+    "text": "book",
+    "file": "audio/en-US/book.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "open",
+    "locale": "en-US",
+    "text": "open",
+    "file": "audio/en-US/open.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "close",
+    "locale": "en-US",
+    "text": "close",
+    "file": "audio/en-US/close.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "touch",
+    "locale": "en-US",
+    "text": "touch",
+    "file": "audio/en-US/touch.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "look",
+    "locale": "en-US",
+    "text": "look",
+    "file": "audio/en-US/look.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "put",
+    "locale": "en-US",
+    "text": "put",
+    "file": "audio/en-US/put.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "take",
+    "locale": "en-US",
+    "text": "take",
+    "file": "audio/en-US/take.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "find",
+    "locale": "en-US",
+    "text": "find",
+    "file": "audio/en-US/find.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "wake",
+    "locale": "en-US",
+    "text": "wake",
+    "file": "audio/en-US/wake.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "turn-on",
+    "locale": "en-US",
+    "text": "turn on",
+    "file": "audio/en-US/turn-on.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "turn-off",
+    "locale": "en-US",
+    "text": "turn off",
+    "file": "audio/en-US/turn-off.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "pick-up",
+    "locale": "en-US",
+    "text": "pick up",
+    "file": "audio/en-US/pick-up.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "put-down",
+    "locale": "en-US",
+    "text": "put down",
+    "file": "audio/en-US/put-down.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "look-at",
+    "locale": "en-US",
+    "text": "look at",
+    "file": "audio/en-US/look-at.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "clean-up",
+    "locale": "en-US",
+    "text": "clean up",
+    "file": "audio/en-US/clean-up.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "on",
+    "locale": "en-US",
+    "text": "on",
+    "file": "audio/en-US/on.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "in",
+    "locale": "en-US",
+    "text": "in",
+    "file": "audio/en-US/in.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "under",
+    "locale": "en-US",
+    "text": "under",
+    "file": "audio/en-US/under.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "next-to",
+    "locale": "en-US",
+    "text": "next to",
+    "file": "audio/en-US/next-to.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "in-front-of",
+    "locale": "en-US",
+    "text": "in front of",
+    "file": "audio/en-US/in-front-of.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "behind",
+    "locale": "en-US",
+    "text": "behind",
+    "file": "audio/en-US/behind.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "red",
+    "locale": "en-US",
+    "text": "red",
+    "file": "audio/en-US/red.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "blue",
+    "locale": "en-US",
+    "text": "blue",
+    "file": "audio/en-US/blue.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "green",
+    "locale": "en-US",
+    "text": "green",
+    "file": "audio/en-US/green.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "big",
+    "locale": "en-US",
+    "text": "big",
+    "file": "audio/en-US/big.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "small",
+    "locale": "en-US",
+    "text": "small",
+    "file": "audio/en-US/small.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "hot",
+    "locale": "en-US",
+    "text": "hot",
+    "file": "audio/en-US/hot.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "cold",
+    "locale": "en-US",
+    "text": "cold",
+    "file": "audio/en-US/cold.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  },
+  {
+    "id": "new",
+    "locale": "en-US",
+    "text": "new",
+    "file": "audio/en-US/new.wav",
+    "engine": "none",
+    "status": "planned-no-engine"
+  }
+]

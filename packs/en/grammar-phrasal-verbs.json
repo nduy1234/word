@@ -1,0 +1,98 @@
+{
+  "packId": "en-grammar-phrasal-verbs",
+  "lang": "en",
+  "room": "grammar-phrasal-verbs",
+  "version": 1,
+  "words": [
+    {
+      "id": "turn-on",
+      "word": "turn on",
+      "ipa": "/tɜːrn ɑːn/",
+      "partOfSpeech": "phrasalVerb",
+      "cefr": "A1",
+      "example": "Turn on the lamp.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/turn-on.mp3",
+      "helper": {
+        "es": "enciende",
+        "vi": "bật"
+      }
+    },
+    {
+      "id": "turn-off",
+      "word": "turn off",
+      "ipa": "/tɜːrn ɔːf/",
+      "partOfSpeech": "phrasalVerb",
+      "cefr": "A1",
+      "example": "Turn off the lamp.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/turn-off.mp3",
+      "helper": {
+        "es": "apaga",
+        "vi": "tắt"
+      }
+    },
+    {
+      "id": "pick-up",
+      "word": "pick up",
+      "ipa": "/pɪk ʌp/",
+      "partOfSpeech": "phrasalVerb",
+      "cefr": "A1",
+      "example": "Pick up the cup.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/pick-up.mp3",
+      "helper": {
+        "es": "recoge",
+        "vi": "nhặt lên"
+      }
+    },
+    {
+      "id": "put-down",
+      "word": "put down",
+      "ipa": "/pʊt daʊn/",
+      "partOfSpeech": "phrasalVerb",
+      "cefr": "A1",
+      "example": "Put down the cup.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/put-down.mp3",
+      "helper": {
+        "es": "deja",
+        "vi": "đặt xuống"
+      }
+    },
+    {
+      "id": "look-at",
+      "word": "look at",
+      "ipa": "/lʊk æt/",
+      "partOfSpeech": "phrasalVerb",
+      "cefr": "A1",
+      "example": "Look at the window.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/look-at.mp3",
+      "helper": {
+        "es": "mira",
+        "vi": "nhìn vào"
+      }
+    },
+    {
+      "id": "clean-up",
+      "word": "clean up",
+      "ipa": "/kliːn ʌp/",
+      "partOfSpeech": "phrasalVerb",
+      "cefr": "A2",
+      "example": "Clean up the table.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/clean-up.mp3",
+      "helper": {
+        "es": "limpia",
+        "vi": "dọn dẹp"
+      }
+    }
+  ]
+}

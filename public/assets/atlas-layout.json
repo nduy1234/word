@@ -1,0 +1,92 @@
+{
+  "cellPx": 256,
+  "cols": 8,
+  "ktx2": "atlas.ktx2",
+  "entries": [
+    {
+      "id": "table",
+      "file": "art/table.png",
+      "cell": 0
+    },
+    {
+      "id": "wall",
+      "file": "art/wall.png",
+      "cell": 1
+    },
+    {
+      "id": "floor",
+      "file": "art/floor.png",
+      "cell": 2
+    },
+    {
+      "id": "ceiling",
+      "file": "art/ceiling.png",
+      "cell": 3
+    },
+    {
+      "id": "door",
+      "file": "art/door.png",
+      "cell": 4
+    },
+    {
+      "id": "window",
+      "file": "art/window.png",
+      "cell": 5
+    },
+    {
+      "id": "couch",
+      "file": "art/couch.png",
+      "cell": 6
+    },
+    {
+      "id": "lamp",
+      "file": "art/lamp.png",
+      "cell": 7
+    },
+    {
+      "id": "plant",
+      "file": "art/plant.png",
+      "cell": 8
+    },
+    {
+      "id": "screen",
+      "file": "art/screen.png",
+      "cell": 9
+    },
+    {
+      "id": "bed",
+      "file": "art/bed.png",
+      "cell": 10
+    },
+    {
+      "id": "shelf",
+      "file": "art/shelf.png",
+      "cell": 11
+    },
+    {
+      "id": "cup",
+      "file": "art/cup.png",
+      "cell": 12
+    },
+    {
+      "id": "plate",
+      "file": "art/plate.png",
+      "cell": 13
+    },
+    {
+      "id": "apple",
+      "file": "art/apple.png",
+      "cell": 14
+    },
+    {
+      "id": "chair",
+      "file": "art/chair.png",
+      "cell": 15
+    },
+    {
+      "id": "book",
+      "file": "art/book.png",
+      "cell": 16
+    }
+  ]
+}

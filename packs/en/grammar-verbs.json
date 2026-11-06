@@ -1,0 +1,128 @@
+{
+  "packId": "en-grammar-verbs",
+  "lang": "en",
+  "room": "grammar-verbs",
+  "version": 1,
+  "words": [
+    {
+      "id": "open",
+      "word": "open",
+      "ipa": "/ˈoʊpən/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Open the door.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/open.mp3",
+      "helper": {
+        "es": "abre",
+        "vi": "mở"
+      }
+    },
+    {
+      "id": "close",
+      "word": "close",
+      "ipa": "/kloʊz/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Close the window.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/close.mp3",
+      "helper": {
+        "es": "cierra",
+        "vi": "đóng"
+      }
+    },
+    {
+      "id": "touch",
+      "word": "touch",
+      "ipa": "/tʌtʃ/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Touch the table.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/touch.mp3",
+      "helper": {
+        "es": "toca",
+        "vi": "chạm"
+      }
+    },
+    {
+      "id": "look",
+      "word": "look",
+      "ipa": "/lʊk/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Look at the plant.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/look.mp3",
+      "helper": {
+        "es": "mira",
+        "vi": "nhìn"
+      }
+    },
+    {
+      "id": "put",
+      "word": "put",
+      "ipa": "/pʊt/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Put the cup on the table.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/put.mp3",
+      "helper": {
+        "es": "pon",
+        "vi": "đặt"
+      }
+    },
+    {
+      "id": "take",
+      "word": "take",
+      "ipa": "/teɪk/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Take the book.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/take.mp3",
+      "helper": {
+        "es": "toma",
+        "vi": "lấy"
+      }
+    },
+    {
+      "id": "find",
+      "word": "find",
+      "ipa": "/faɪnd/",
+      "partOfSpeech": "verb",
+      "cefr": "A1",
+      "example": "Find the cup.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/find.mp3",
+      "helper": {
+        "es": "encuentra",
+        "vi": "tìm"
+      }
+    },
+    {
+      "id": "wake",
+      "word": "wake",
+      "ipa": "/weɪk/",
+      "partOfSpeech": "verb",
+      "cefr": "A2",
+      "example": "Wake the lamp.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/wake.mp3",
+      "helper": {
+        "es": "despierta",
+        "vi": "đánh thức"
+      }
+    }
+  ]
+}

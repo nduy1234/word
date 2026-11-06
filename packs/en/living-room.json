@@ -1,0 +1,224 @@
+{
+  "packId": "en-living-room",
+  "lang": "en",
+  "room": "living-room",
+  "version": 1,
+  "words": [
+    {
+      "id": "table",
+      "word": "table",
+      "ipa": "/ˈteɪbəl/",
+      "partOfSpeech": "noun",
+      "plural": "tables",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The table is big.",
+      "sceneLabel": "table",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/table.mp3",
+      "helper": {
+        "es": "la mesa",
+        "vi": "cái bàn"
+      }
+    },
+    {
+      "id": "wall",
+      "word": "wall",
+      "ipa": "/wɔːl/",
+      "partOfSpeech": "noun",
+      "plural": "walls",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The wall is white.",
+      "sceneLabel": "wall",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/wall.mp3",
+      "helper": {
+        "es": "la pared",
+        "vi": "bức tường"
+      }
+    },
+    {
+      "id": "floor",
+      "word": "floor",
+      "ipa": "/flɔːr/",
+      "partOfSpeech": "noun",
+      "plural": "floors",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The floor is clean.",
+      "sceneLabel": "floor",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/floor.mp3",
+      "helper": {
+        "es": "el suelo",
+        "vi": "sàn nhà"
+      }
+    },
+    {
+      "id": "ceiling",
+      "word": "ceiling",
+      "ipa": "/ˈsiːlɪŋ/",
+      "partOfSpeech": "noun",
+      "plural": "ceilings",
+      "article": "a",
+      "cefr": "A2",
+      "example": "The ceiling is high.",
+      "sceneLabel": "ceiling",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/ceiling.mp3",
+      "helper": {
+        "es": "el techo",
+        "vi": "trần nhà"
+      }
+    },
+    {
+      "id": "door",
+      "word": "door",
+      "ipa": "/dɔːr/",
+      "partOfSpeech": "noun",
+      "plural": "doors",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The door is closed.",
+      "sceneLabel": "door",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/door.mp3",
+      "helper": {
+        "es": "la puerta",
+        "vi": "cửa"
+      }
+    },
+    {
+      "id": "window",
+      "word": "window",
+      "ipa": "/ˈwɪndoʊ/",
+      "partOfSpeech": "noun",
+      "plural": "windows",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The window is open.",
+      "sceneLabel": "window",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/window.mp3",
+      "helper": {
+        "es": "la ventana",
+        "vi": "cửa sổ"
+      }
+    },
+    {
+      "id": "couch",
+      "word": "couch",
+      "ipa": "/kaʊtʃ/",
+      "partOfSpeech": "noun",
+      "plural": "couches",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The couch is soft.",
+      "sceneLabel": "couch",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/couch.mp3",
+      "helper": {
+        "es": "el sofá",
+        "vi": "ghế sofa"
+      }
+    },
+    {
+      "id": "lamp",
+      "word": "lamp",
+      "ipa": "/læmp/",
+      "partOfSpeech": "noun",
+      "plural": "lamps",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The lamp is on.",
+      "sceneLabel": "lamp",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/lamp.mp3",
+      "helper": {
+        "es": "la lámpara",
+        "vi": "đèn"
+      }
+    },
+    {
+      "id": "plant",
+      "word": "plant",
+      "ipa": "/plænt/",
+      "partOfSpeech": "noun",
+      "plural": "plants",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The plant is green.",
+      "sceneLabel": "plant",
+      "wakeFx": "bloom",
+      "rarity": "rare",
+      "audio": "audio/en-US/plant.mp3",
+      "helper": {
+        "es": "la planta",
+        "vi": "cây"
+      }
+    },
+    {
+      "id": "screen",
+      "word": "screen",
+      "ipa": "/skriːn/",
+      "partOfSpeech": "noun",
+      "plural": "screens",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The screen is big.",
+      "sceneLabel": "screen",
+      "wakeFx": "bloom",
+      "rarity": "rare",
+      "audio": "audio/en-US/screen.mp3",
+      "helper": {
+        "es": "la pantalla",
+        "vi": "màn hình"
+      }
+    },
+    {
+      "id": "bed",
+      "word": "bed",
+      "ipa": "/bed/",
+      "partOfSpeech": "noun",
+      "plural": "beds",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The bed is small.",
+      "sceneLabel": "bed",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/bed.mp3",
+      "helper": {
+        "es": "la cama",
+        "vi": "giường"
+      }
+    },
+    {
+      "id": "shelf",
+      "word": "shelf",
+      "ipa": "/ʃelf/",
+      "partOfSpeech": "noun",
+      "plural": "shelves",
+      "article": "a",
+      "cefr": "A2",
+      "example": "The shelf is high.",
+      "sceneLabel": "storage",
+      "wakeFx": "bloom",
+      "rarity": "rare",
+      "audio": "audio/en-US/shelf.mp3",
+      "helper": {
+        "es": "la estantería",
+        "vi": "kệ"
+      }
+    }
+  ]
+}

@@ -54,7 +54,8 @@ export function matchTranscript(transcript: string, targetWord: string, targetIp
   const heard = normalize(transcript);
   const target = normalize(targetWord);
   if (!heard) return { result: 'wrong', heard };
-  const heardWord = heard.split(' ').find((w) => w === target) ?? heard.split(' ').at(-1) ?? heard;
+  const heardWords = heard.split(' ');
+  const heardWord = heardWords.find((w) => w === target) ?? heardWords[heardWords.length - 1] ?? heard;
   if (heardWord === target) return { result: 'exact', heard };
   const pair = MINIMAL_PAIRS.find(([w, p]) => w === target && p === heardWord);
   if (pair) return { result: 'almost', heard, kind: 'minimal-pair', hint: `Almost! ${pair[2]}. Try: ${target}` };

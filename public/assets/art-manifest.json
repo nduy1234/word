@@ -1,0 +1,121 @@
+[
+  {
+    "id": "table",
+    "file": "art/table.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: table.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "wall",
+    "file": "art/wall.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: wall.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "floor",
+    "file": "art/floor.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: floor.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "ceiling",
+    "file": "art/ceiling.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: ceiling.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "door",
+    "file": "art/door.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: door.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "window",
+    "file": "art/window.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: window.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "couch",
+    "file": "art/couch.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: couch.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "lamp",
+    "file": "art/lamp.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: lamp.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "plant",
+    "file": "art/plant.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: plant.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "screen",
+    "file": "art/screen.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: screen.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "bed",
+    "file": "art/bed.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: bed.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "shelf",
+    "file": "art/shelf.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: shelf.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "cup",
+    "file": "art/cup.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: cup.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "plate",
+    "file": "art/plate.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: plate.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "apple",
+    "file": "art/apple.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: apple.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "chair",
+    "file": "art/chair.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: chair.",
+    "status": "planned-dry-run"
+  },
+  {
+    "id": "book",
+    "file": "art/book.png",
+    "model": "muse-image-1.0",
+    "prompt": "soft stylized low-poly sticker, rounded chunky silhouette, warm off-white background #FFF4E0, ink outline #2D2438, no text, no brands, no people. Object: book.",
+    "status": "planned-dry-run"
+  }
+]

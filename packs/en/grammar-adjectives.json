@@ -1,0 +1,128 @@
+{
+  "packId": "en-grammar-adjectives",
+  "lang": "en",
+  "room": "grammar-adjectives",
+  "version": 1,
+  "words": [
+    {
+      "id": "red",
+      "word": "red",
+      "ipa": "/red/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The apple is red.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/red.mp3",
+      "helper": {
+        "es": "rojo",
+        "vi": "đỏ"
+      }
+    },
+    {
+      "id": "blue",
+      "word": "blue",
+      "ipa": "/bluː/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The cup is blue.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/blue.mp3",
+      "helper": {
+        "es": "azul",
+        "vi": "xanh dương"
+      }
+    },
+    {
+      "id": "green",
+      "word": "green",
+      "ipa": "/ɡriːn/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The plant is green.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/green.mp3",
+      "helper": {
+        "es": "verde",
+        "vi": "xanh lá"
+      }
+    },
+    {
+      "id": "big",
+      "word": "big",
+      "ipa": "/bɪɡ/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The table is big.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/big.mp3",
+      "helper": {
+        "es": "grande",
+        "vi": "to"
+      }
+    },
+    {
+      "id": "small",
+      "word": "small",
+      "ipa": "/smɔːl/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The chair is small.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/small.mp3",
+      "helper": {
+        "es": "pequeño",
+        "vi": "nhỏ"
+      }
+    },
+    {
+      "id": "hot",
+      "word": "hot",
+      "ipa": "/hɑːt/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The cup is hot.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/hot.mp3",
+      "helper": {
+        "es": "caliente",
+        "vi": "nóng"
+      }
+    },
+    {
+      "id": "cold",
+      "word": "cold",
+      "ipa": "/koʊld/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The apple is cold.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/cold.mp3",
+      "helper": {
+        "es": "frío",
+        "vi": "lạnh"
+      }
+    },
+    {
+      "id": "new",
+      "word": "new",
+      "ipa": "/nuː/",
+      "partOfSpeech": "adjective",
+      "cefr": "A1",
+      "example": "The book is new.",
+      "wakeFx": "spell",
+      "rarity": "common",
+      "audio": "audio/en-US/new.mp3",
+      "helper": {
+        "es": "nuevo",
+        "vi": "mới"
+      }
+    }
+  ]
+}

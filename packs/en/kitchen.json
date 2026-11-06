@@ -1,0 +1,98 @@
+{
+  "packId": "en-kitchen",
+  "lang": "en",
+  "room": "kitchen",
+  "version": 1,
+  "words": [
+    {
+      "id": "cup",
+      "word": "cup",
+      "ipa": "/kʌp/",
+      "partOfSpeech": "noun",
+      "plural": "cups",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The cup is hot.",
+      "propId": "cup",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/cup.mp3",
+      "helper": {
+        "es": "la taza",
+        "vi": "cái cốc"
+      }
+    },
+    {
+      "id": "plate",
+      "word": "plate",
+      "ipa": "/pleɪt/",
+      "partOfSpeech": "noun",
+      "plural": "plates",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The plate is empty.",
+      "propId": "plate",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/plate.mp3",
+      "helper": {
+        "es": "el plato",
+        "vi": "cái đĩa"
+      }
+    },
+    {
+      "id": "apple",
+      "word": "apple",
+      "ipa": "/ˈæpəl/",
+      "partOfSpeech": "noun",
+      "plural": "apples",
+      "article": "an",
+      "cefr": "A1",
+      "example": "The apple is red.",
+      "propId": "apple",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/apple.mp3",
+      "helper": {
+        "es": "la manzana",
+        "vi": "quả táo"
+      }
+    },
+    {
+      "id": "chair",
+      "word": "chair",
+      "ipa": "/tʃer/",
+      "partOfSpeech": "noun",
+      "plural": "chairs",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The chair is small.",
+      "propId": "chair",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/chair.mp3",
+      "helper": {
+        "es": "la silla",
+        "vi": "cái ghế"
+      }
+    },
+    {
+      "id": "book",
+      "word": "book",
+      "ipa": "/bʊk/",
+      "partOfSpeech": "noun",
+      "plural": "books",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The book is new.",
+      "propId": "book",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "audio/en-US/book.mp3",
+      "helper": {
+        "es": "el libro",
+        "vi": "quyển sách"
+      }
+    }
+  ]
+}
