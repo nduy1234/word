@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link rel="icon" href="data:," />
+    <title>Word: Wake Your Room</title>
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; background: #2d2438; }
+      #launch {
+        position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 14px; text-align: center;
+        background: #2d2438; color: #fff4e0; padding: 24px;
+      }
+      #launch h1 { margin: 0; font-size: 2rem; }
+      #launch p { margin: 0; max-width: 34rem; line-height: 1.45; }
+      #enter-room {
+        font-size: 1.35rem; padding: 16px 42px; border: 0; border-radius: 999px;
+        background: #ffb43a; color: #2d2438; font-weight: 700; cursor: pointer;
+      }
+      #play-vr { color: #7c9eff; background: none; border: 0; cursor: pointer; font-size: 1rem; text-decoration: underline; }
+      #privacy { font-size: 0.85rem; opacity: 0.85; }
+      #launch-error { color: #ff7a59; min-height: 1.2em; }
+      #caption {
+        position: fixed; left: 50%; bottom: 8%; transform: translateX(-50%); z-index: 9;
+        background: #fff4e0; color: #2d2438; border-radius: 12px; padding: 10px 22px;
+        font-size: 1.4rem; font-weight: 600; display: none;
+      }
+      #fps {
+        position: fixed; top: 8px; left: 8px; z-index: 9; display: none;
+        background: rgba(45,36,56,0.85); color: #57c98a; padding: 4px 10px;
+        border-radius: 8px; font: 600 0.85rem ui-monospace, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scene-container"></div>
+
+    <section id="launch" aria-label="Launch">
+      <h1>Word: Wake Your Room</h1>
+      <p>
+        The Hush stole the names of everything in your room.<br />
+        Poke, pinch, flick, or speak the words to wake your room back up.<br />
+        Hands only — sit down, reach out, and name what you see.
+      </p>
+      <button id="enter-room" type="button">Enter your room</button>
+      <button id="play-vr" type="button">Play in VR instead</button>
+      <p id="privacy">Privacy: room geometry and camera data never leave this device. Only room label names are sent for lessons, and voice only if you opt in — never stored.</p>
+      <p id="launch-error" role="alert"></p>
+    </section>
+
+    <div id="caption" role="status"></div>
+    <div id="fps"></div>
+
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>
