@@ -10,6 +10,27 @@ import projectOptions from 'virtual:iwsdk-project';
 import { PanelSystem } from './panel.js';
 import { FpsSystem } from './word/fps-system.js';
 import { WordSystem } from './word/word-system.js';
+import { cycleHelper, detectHelper, type HelperLang } from './word/helper.js';
+import { load, save } from './word/store.js';
+
+// Helper picker: auto-detect from locale, one tap/pinch cycles + confirms, saved.
+const helperBtn = document.getElementById('helper-picker') as HTMLButtonElement | null;
+const immersionBox = document.getElementById('immersion') as HTMLInputElement | null;
+try {
+  const state = load(localStorage);
+  let helper: HelperLang = state.helperLang === 'auto' || !state.helperLang
+    ? detectHelper(navigator.language) : (state.helperLang as HelperLang);
+  if (immersionBox) immersionBox.checked = state.immersion;
+  const render = () => { if (helperBtn) helperBtn.textContent = `Helper: ${helper === 'es' ? 'Español' : helper === 'vi' ? 'Tiếng Việt' : 'off'} (tap to change)`; };
+  render();
+  helperBtn?.addEventListener('click', () => {
+    helper = cycleHelper(helper);
+    const s = load(localStorage); s.helperLang = helper; save(localStorage, s); render();
+  });
+  immersionBox?.addEventListener('change', () => {
+    const s = load(localStorage); s.immersion = immersionBox.checked; save(localStorage, s);
+  });
+} catch { /* picker optional; game continues English-only */ }
 
 const launchError = document.getElementById('launch-error');
 const caption = document.getElementById('caption');

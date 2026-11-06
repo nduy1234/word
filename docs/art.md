@@ -21,8 +21,8 @@ Create before building or generating any assets. One palette, one shape language
 | Life green | leaf | `#57C98A` | awake objects, success, mural growth |
 | Sky voice | periwinkle | `#7C9EFF` | voice/mic orb, Echo speech, spell tiles (verb) |
 | Tile noun | teal | `#2EC4B6` | noun tiles, Atlas stickers |
-| Tile gender M | blue outline | `#3A86FF` | masculine agreement snap cue |
-| Tile gender F | rose outline | `#FF5D8F` | feminine agreement snap cue |
+| Tile adjective | orange | `#FF9F1C` | adjective tiles (snap before noun only) |
+| Tile preposition | purple | `#9B5DE5` | preposition tiles (spatial spells) |
 | Parchment | warm off-white | `#FFF4E0` | quest card, mural canvas, captions bg |
 | Ink | deep plum | `#2D2438` | text, outlines (never pure black) |
 
@@ -36,7 +36,7 @@ Awake indicator: color + outline + icon (colorblind-safe, never color alone).
 
 ## Typography & captions
 
-- One rounded sans. English UI; target word large, English translation always beside/below.
+- One rounded sans. English UI; English target word large, IPA on tap, helper hint small when hints on (hidden in Immersion mode). Tile color = part of speech, never gender.
 - Captions: Parchment bg, Ink text, adjustable size. Min size readable on Quest 3S; essential UI within ±25° central cone.
 
 ## Audio-visual pairing (no haptics)

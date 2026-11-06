@@ -10,7 +10,12 @@ Build "Word" for the Meta VR Start Developer Competition 2026.
 
 ## Concept
 
-A fog called the Hush stole the names of everything in YOUR room. Through passthrough, your real table, walls, door, window, and couch look gray and silent. Name each one in the target language and it wakes up with color, sound, and life. Your real room becomes the level, and day by day it becomes fluent. This needs presence, real-world scale, and hands, so it couldn't exist on any other platform.
+A fog called the Hush stole the names of everything in YOUR room. Through passthrough, your real table, walls, door, window, and couch look gray and silent. Name each one in English and it wakes up with color, sound, and life. Your real room becomes the level, and day by day it becomes fluent. This needs presence, real-world scale, and hands, so it couldn't exist on any other platform.
+
+## Audience and languages
+
+- Target language: English (US voice by default, UK voice optional). Audience: English learners ages 10+, starting at CEFR A1–A2.
+- Helper language: small native-language hints, auto-detected from browser locale and confirmed with one pinch at launch. Seed Spanish and Vietnamese; configurable. English always primary; "Immersion mode" toggle hides hints. Whole UI stays English.
 
 ## Hard requirements (all must pass)
 
@@ -24,7 +29,7 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
 4. **Original, not a wrapper.** The game is complete with AI and network turned off (the "take it away" test: every Meta AI feature below has an offline fallback).
 5. **Performance.** Minimum 60 fps on Quest 3/3S; target 72 fps. No crashes. Test in rooms we've never used.
 6. **Content rules.**
-   - English UI. Target-language words always show the English translation.
+   - English UI. English target words always show IPA on tap and helper hint when hints are on (see Audience and languages).
    - Suitable for ages 10+.
    - No brands or logos, and no identifiable people.
    - Licensed assets only, listed in `/ASSETS.md`.
@@ -37,6 +42,7 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
 ## Entry and permissions
 
 - Launch page: one big "Enter your room" button, a small "Play in VR instead" link, and a 3-line explanation.
+- At launch: helper language auto-detected from browser locale, confirmed with one pinch; Immersion mode toggle hides hints (see Audience and languages).
 - Ask for spatial-data permission when entering MR. If denied, go straight to the "pinch your table" setup, or the VR room.
 - Ask for microphone only when the player first chooses voice, never at launch.
 - If Quest has no space setup, show a friendly one-line prompt with a "skip" option that uses the fallback.
@@ -52,7 +58,7 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
 
 ## Mixed reality: purposeful passthrough
 
-- **Scene understanding:** read detected planes and meshes plus their semantic labels (for example table, wall, floor, door, window, couch, lamp, plant, screen, storage). Each labeled surface becomes an unnamed object to wake, using its real-world word (la mesa, la pared, la puerta, la ventana, el sofá).
+- **Scene understanding:** read detected planes and meshes plus their semantic labels (for example table, wall, floor, door, window, couch, lamp, plant, screen, storage). Each labeled surface becomes an unnamed object to wake, using its English word (table, wall, door, window, couch).
   - Scene labels may be "other," duplicated, or missing. Skip unknown labels, keep at most one target per label, and pad with diorama words so every room has at least 10 targets.
 - **Table as play surface:** find the nearest table plane at seated height and grow a small diorama on it (kitchen, café, market) with 10–15 props to wake.
 - **Walls host content:** the day's quest card and a "Fluency Mural" pin to the nearest wall in your view. The mural is a living painting that fills in as your room becomes fluent and is your visible progress between sessions. The Mystery Board appears only if Room Mysteries ship (stretch).
@@ -86,7 +92,14 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
 
 - **Poke** an object to hear its word (pre-recorded/pre-generated audio plus a caption). Poke is only for props on the table diorama — real-room targets are beyond reach (see Hard requirements).
 - **Pinch and pull** a glowing Word Sprite out of the air, then **flick** it at the matching object. A correct hit wakes the object. A wrong hit makes the sprite bounce back with a gentle hint. Aim assist curves sprites toward the nearest valid target within 15°; thresholds are forgiving.
-- **Sentence Spells (signature mechanic):** pinch two word tiles and snap them together in midair like magnets ("abre" + "la ventana"), then flick the spell. The virtual window shutters on your real window open and a breeze plays. Grammar becomes something you build with your hands. Start with 8 verbs and a slot grammar: verb + object, adjective + noun, with gender agreement shown by the tile color snapping.
+- **Sentence Spells (signature mechanic):** pinch two word tiles and snap them together in midair like magnets, then flick the spell. Grammar becomes something you build with your hands. English grammar rules (replace all gender rules):
+  - **Verb + object:** "open" + "the window" — virtual shutters on your real window open, breeze plays.
+  - **Phrasal verbs:** "turn on" + "the lamp" makes your real lamp glow virtually; "pick up" + "the cup" lifts the cup. Phrasal verb is one tile (verb + particle inseparable at A1–A2).
+  - **Word order:** adjective tile only snaps before a noun ("the red cup"); wrong order visibly repels (no snap, tile pushes back).
+  - **Articles:** "a" / "an" tiles snap only to nouns whose stored `article` matches ("a cup," "an apple"). Article stored in pack data, never computed at runtime.
+  - **Plurals:** pinch-stretch a noun tile to pluralize it ("cup" → "cups", from stored `plural`) and the prop multiplies on the table.
+  - **Spatial prepositions (signature MR moment):** Echo says "Put the cup under the table" and player physically places it. Game checks relation (on, under, next to, in front of, behind) against real geometry. Deterministic, unit-tested geometric functions relative to table plane and player view — design in reply/docs, implementation pending approval.
+  - Start: 8 verbs, 6 phrasal verbs, 6 prepositions, 8 adjectives (colors and sizes). Tile color = part of speech, never gender.
 - **Palm-up menu:** look at your open palm to see the Atlas, today's quest, and settings. Pinch to select.
 - **Alternatives (Accessibility):**
   - Voice: say the word to wake the object you're facing (see Meta AI runtime features — Muse Voice Transcribe). Microphone permission is requested only at first voice use (see Entry and permissions). Mic input: record 3-second clips with `getUserMedia`, after verifying `getUserMedia` works on Quest Browser.
@@ -103,7 +116,7 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
 
 1. **Explore:** look around your room and table; unnamed things shimmer.
 2. **Discover:** poke to hear and collect a Word Sprite.
-3. **Name it:** a quest asks you to wake "la ventana" by flicking, speaking, or gaze-pinching.
+3. **Name it:** a quest asks you to wake "the window" by flicking, speaking, or gaze-pinching.
 4. **Wake it:** color, sound, particles; the Hush recedes from that spot.
 5. **Fade = review:** spaced repetition (FSRS-lite or SM-2, unit-tested) makes due words fade toward gray where they're anchored in your room. Restoring them is the review session.
 
@@ -129,17 +142,17 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
 
 1. **Say it to wake it (Muse Voice Transcribe):**
    - Pinch-and-hold on the mic orb, say the word (3-second `getUserMedia` clip; verify `getUserMedia` on Quest Browser first), and the audio is transcribed server-side via the Vercel API proxy.
-   - Compare the transcript to the target word, using accent-tolerant matching that grades both meaning and pronunciation, and give a gentle "almost" hint on near misses.
+   - Compare the transcript to the target English word. Grade for intelligibility, never for accent. Gentle "almost" hints on common learner confusions: minimal pairs (ship/sheep, light/right) and word stress, shown as bouncing syllable dots. IPA appears on tap.
    - This is the primary accessibility alternative to hand gestures.
    - Fallback: gaze-pinch multiple choice.
 2. **Echo, the voice-first agent (Muse Spark or Muse Wonder):**
-   - Echo speaks short lines using only words you know plus 1 new word, reacts to what you just woke, and invents Sentence Spell challenges about YOUR room.
+   - Echo speaks simple English at the learner's CEFR level using only words you know plus 1 new word, reacts to what you just woke, and invents Sentence Spell challenges about YOUR room. Palm button gives helper-language hint when hints are on.
    - Output is strict JSON `{line, newWordId, spell}`, schema-validated. Never execute model output.
    - Echo's generated lines are spoken through Muse Voice speech generation if available; otherwise `speechSynthesis`; otherwise captions only.
    - Fallback: scripted lines.
 3. **Room-aware curriculum (Muse Spark):**
    - After scene detection, send ONLY the list of semantic labels (never geometry or camera data).
-   - The model returns a personalized pack: words, example sentences, distractors, and spells for the things actually in your room.
+   - The model returns a personalized pack: English words, CEFR-level example sentences, helper translations (es/vi), distractors, and spells for the things actually in your room.
    - Validate, cache locally, and reuse offline. Fallback: seed packs.
 4. **Latency and reliability:**
    - Responses under 1.5s, or Echo plays a "thinking" animation.
@@ -154,8 +167,8 @@ Documented in `/docs/ai-pipeline.md`.
 5. **Muse Image:** generate the stylized sticker art for every Atlas word, Fluency Mural tiles, and cosmetic textures in the style from `/docs/art.md`. Check the usage terms, and record the model, prompt, and date for each asset in `/ASSETS.md`.
 6. **SAM 3.1:** segment the generated images into clean cut-out stickers and mural pieces with alpha masks, then pack them into one texture atlas.
    - Runtime segmentation of passthrough is allowed ONLY if a public API exposes camera frames to our web app; verify first. Otherwise SAM stays build-time.
-7. **Muse Voice:** if it offers speech generation, pre-generate native-speaker-quality pronunciation clips for all seed words. That's license-clean audio, shipped with the app so it works offline. Runtime Echo lines use the speech chain in feature 2.
-8. **Open-weights models (Muse Glimmer or Muse Spark Open):** run locally in a script to batch-generate and cross-check the offline seed packs (translations, gender, example sentences). The second model verifies the first, and disagreements are flagged for human review. This keeps shipped content correct with zero network.
+7. **Muse Voice:** if it offers speech generation, pre-generate English pronunciation clips (US, plus UK if time allows) for all seed words. That's license-clean audio, shipped with the app so it works offline. Runtime Echo lines use the speech chain in feature 2.
+8. **Open-weights models (Muse Glimmer or Muse Spark Open):** run locally in a script to batch-generate and cross-check the offline seed packs (IPA, plurals, articles, CEFR levels, helper translations). The second model verifies the first, and disagreements are flagged for human review. This keeps shipped content correct with zero network.
 9. **Coding agent:** we build with Muse Wonder through our coding agent setup. If Muse Code, Meta XR Operator, or Agentic Tools (Skills) are available to us, use them where they fit, such as automated device QA. Log what was actually used in `/docs/tooling.md`; only claim tools we really used.
 
 ### Privacy (replaces the base plan's "voice never leaves the device" line)
@@ -166,8 +179,8 @@ Documented in `/docs/ai-pipeline.md`.
 
 ### Impact (state this in the submission)
 
-- **Who benefits:** language learners who quit flashcard apps.
-- **Why it works:** words are learned in the real place you'll use them (context-dependent memory), with daily spaced review built into your own room.
+- **Who benefits:** English learners — one of the largest learner groups in the world — who quit flashcard apps.
+- **Why it works:** words are learned in the real place you'll use them (context-dependent memory), with daily spaced review built into your own room. Prepositions and phrasal verbs are notoriously hard from flashcards; Word teaches them through real space and your hands, in your own room.
 - **Path to real use:** any language pack, any room, sessions of 10 minutes or less.
 
 ## FoV-aware design and comfort
@@ -191,18 +204,18 @@ Documented in `/docs/ai-pipeline.md`.
 
 ## Content and audio
 
-- Packs live in `/packs/es/{room}.json`. Each word has id, target, english, partOfSpeech, gender, example, sceneLabel or propId, wakeFx, and rarity.
-- Seed content: 12 real-room words from scene labels, plus 3 dioramas × 12 words, plus 8 verbs.
-- Audio: pre-recorded or pre-generated clips for every seed word (Muse Voice pre-generation if available, license-compliant source otherwise), shipped with the app so it works offline, with speechSynthesis as fallback only.
+- Packs live in `/packs/en/{room}.json`. Each word has id, word, ipa, partOfSpeech, plural, article ("a" or "an", stored in the data, never computed at runtime), cefr, example, helper {es, vi}, sceneLabel or propId, wakeFx, rarity, and audio.
+- Seed content: 12 real-room words (table, wall, floor, ceiling, door, window, couch, lamp, plant, screen, bed, shelf), plus 3 dioramas × 12 words, plus 8 verbs, 6 phrasal verbs, 6 prepositions, and 8 adjectives (colors and sizes).
+- Audio: English pronunciation clips (US, plus UK if time allows) for every seed word (Muse Voice pre-generation if available, license-compliant source otherwise), shipped with the app so it works offline, with speechSynthesis (`en-US` default) as fallback only.
 - Sound design: a unique wake sound per object, soft ambient room tone, and satisfying snap and flick sounds.
 
 ## First five minutes (Best First Five Minutes)
 
 1. 0–20s: the fog drifts in over your real room and Echo lands on your palm.
-2. A ghost hand demonstrates a poke. Your real table glows: "la mesa." Poke it and it wakes.
+2. Your real table glows: "table." Poke it, hear "table," and it wakes.
 3. A ghost hand demonstrates pinch-and-flick: wake the window and the door.
-4. The diorama grows on your table and you wake 3 props.
-5. Your first Sentence Spell, "abre la puerta," opens the door to the Kitchen district.
+4. Your first Sentence Spell, "open the door," opens the door to the Kitchen district. The diorama grows on your table and you wake 3 props.
+5. Before minute 5: "put the cup on the table," solved by physically placing the cup (spatial preposition check).
 - No text walls; captions only. A real payoff before minute 2.
 
 ## Milestones (demo each on a Quest 3 or the emulator)

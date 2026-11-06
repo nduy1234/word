@@ -16,16 +16,16 @@ Model API docs before use — never guess model names or parameters. Log actual 
    Runtime segmentation of passthrough: only if a public API exposes camera frames to
    the web app — verify first; otherwise build-time only.
 4. **Muse Voice — pronunciation clips.** If speech generation is available, pre-generate
-   clips for every seed word; ship with the app (works offline). Fallback: other
-   license-compliant recorded audio, then `speechSynthesis`.
+   English clips (US, plus UK if time allows) for every seed word; ship with the app (works offline). Fallback: other
+   license-compliant recorded audio, then `speechSynthesis` (`en-US`).
 5. **Open-weights pack generation (Muse Glimmer or Muse Spark Open).** Local script
-   batch-generates seed-pack drafts (translations, gender, example sentences). A second
+   batch-generates seed-pack drafts (IPA, plurals, articles, CEFR levels, helper translations es/vi). A second
    model cross-checks the first; disagreements flagged for human review — no auto-ship.
-   Output lands in `packs/es/{room}.json` only after human approval + pack validation tests.
+   Output lands in `packs/en/{room}.json` only after human approval + pack validation tests.
 
 ## Gates (all must pass before assets/content ship)
 
 - Model availability + terms verified; `docs/tooling.md` status updated with evidence.
 - Every generated asset recorded in `ASSETS.md` (model, prompt, date, license/terms basis).
-- Pack validation tests pass (schema, gender, duplicate ids, sceneLabel/propId refs).
+- Pack validation tests pass (schema, duplicate ids, article/plural/IPA/CEFR fields, sceneLabel/propId refs).
 - Atlas fits budget: <100 draw calls, ~150k tris visible, KTX2, baked lighting.

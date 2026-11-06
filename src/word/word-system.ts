@@ -24,6 +24,8 @@ import {
 } from '@iwsdk/core';
 import { WordTarget } from './word-component.js';
 import { KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
+import { fadeAmount, gradeCard, newCard, type CardState } from './scheduler.js';
+import { load, save, toTableRelative, type SaveState } from './store.js';
 
 const HUSH = new Color(0x7a8794); // docs/art.md Hush fog
 const WAKE = new Color(0xffb43a); // docs/art.md Wake warm
@@ -32,7 +34,7 @@ const AWAKE = new Color(0x57c98a); // docs/art.md Life green
 function speak(entry: WordEntry): void {
   // Poke-to-hear: pre-generated clips ship later; chain per PLAN is
   // clip -> speechSynthesis -> captions only.
-  const caption = `${entry.target} — ${entry.english}`;
+  const caption = `${entry.word} — ${entry.ipa}`;
   console.info(`[Word caption] ${caption}`);
   try {
     globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: caption }));
@@ -42,8 +44,8 @@ function speak(entry: WordEntry): void {
   try {
     const synth = globalThis.speechSynthesis;
     if (synth) {
-      const utterance = new SpeechSynthesisUtterance(entry.target);
-      utterance.lang = 'es-ES';
+      const utterance = new SpeechSynthesisUtterance(entry.word);
+      utterance.lang = 'en-US';
       synth.speak(utterance);
     }
   } catch (error) {
@@ -58,11 +60,18 @@ export class WordSystem extends createSystem({
 }) {
   private claimedLabels = new Set<string>();
   private paused = false;
+  private cards = new Map<string, CardState>();
+  private persisted: SaveState | null = null;
+  private tableOrigin: { x: number; y: number; z: number } | null = null;
   private elapsed = 0;
   private dioramaParts: { object: Mesh; offsetX: number }[] = [];
   private dioramaOnRealTable = false;
 
   init(): void {
+    try {
+      this.persisted = load(localStorage);
+      this.cards = new Map(this.persisted.cards.map((c) => [c.wordId, c]));
+    } catch { this.persisted = null; }
     try {
       this.buildFallbackDiorama();
     } catch (error) {
@@ -74,10 +83,17 @@ export class WordSystem extends createSystem({
         const entry = wordById(entity.getValue(WordTarget, 'wordId') ?? '');
         if (!entry) return;
         speak(entry);
-        if (entity.getValue(WordTarget, 'state') === 'sleeping') {
+        const now0 = Date.now();
+        const existing = this.cards.get(entry.id);
+        const reviewable = entity.getValue(WordTarget, 'state') === 'awake' && existing && existing.dueAt <= now0;
+        if (entity.getValue(WordTarget, 'state') === 'sleeping' || reviewable) {
           entity.setValue(WordTarget, 'state', 'awake');
           entity.setValue(WordTarget, 'bloom', 1);
-          console.info(`[Word] woke ${entry.target} (${entry.english})`);
+          const now = Date.now();
+          const prev = this.cards.get(entry.id) ?? newCard(entry.id, now);
+          this.cards.set(entry.id, gradeCard(prev, 4, now));
+          this.persistProgress();
+          console.info(`[Word] woke ${entry.word} (${entry.ipa})`);
         }
       } catch (error) {
         console.error('[Word] press handling failed', error);
@@ -106,6 +122,21 @@ export class WordSystem extends createSystem({
     );
   }
 
+  /** Persist cards + awake ids + table-relative positions; failure never crashes. */
+  private persistProgress(): void {
+    try {
+      if (!this.persisted) this.persisted = load(localStorage);
+      this.persisted.cards = [...this.cards.values()];
+      this.persisted.awake = [...this.cards.keys()];
+      save(localStorage, this.persisted);
+    } catch { /* storage unavailable: session continues unpersisted */ }
+  }
+
+  private restoreAwake(entity: { getValue: Function; setValue: Function }): void {
+    const id = entity.getValue(WordTarget, 'wordId') as string;
+    if (this.persisted?.awake.includes(id)) entity.setValue(WordTarget, 'state', 'awake');
+  }
+
   /** No scene data / emulator: virtual tabletop at lap height with props. */
   private buildFallbackDiorama(): void {
     const tableMaterial = new MeshStandardMaterial({ color: HUSH.clone() });
@@ -113,7 +144,8 @@ export class WordSystem extends createSystem({
     table.position.set(0, 0.74, -1.15);
     const tableEntity = this.world.createTransformEntity(table);
     tableEntity.addComponent(WordTarget);
-    tableEntity.setValue(WordTarget, 'wordId', 'mesa');
+    tableEntity.setValue(WordTarget, 'wordId', 'table');
+    this.restoreAwake(tableEntity);
     tableEntity.addComponent(RayInteractable);
     this.dioramaParts.push({ object: table, offsetX: 0 });
 
@@ -131,6 +163,7 @@ export class WordSystem extends createSystem({
       const entity = this.world.createTransformEntity(prop);
       entity.addComponent(WordTarget);
       entity.setValue(WordTarget, 'wordId', entry.id);
+      this.restoreAwake(entity);
       entity.addComponent(RayInteractable);
       this.dioramaParts.push({ object: prop, offsetX: -0.4 + index * 0.2 });
     });
@@ -146,7 +179,8 @@ export class WordSystem extends createSystem({
     const origin = entity.object3D?.position ?? { x: 0, y: 1.2, z: -1.5 };
 
     // Table found: move the fallback diorama onto the real table, once.
-    if (entry.id === 'mesa' && !this.dioramaOnRealTable) {
+    if (entry.id === 'table' && !this.dioramaOnRealTable) {
+      this.tableOrigin = { ...origin };
       this.dioramaOnRealTable = true;
       for (const part of this.dioramaParts) {
         const isTableTop = part.offsetX === 0 && part.object.geometry.type === 'BoxGeometry';
@@ -165,8 +199,14 @@ export class WordSystem extends createSystem({
     const target = this.world.createTransformEntity(marker);
     target.addComponent(WordTarget);
     target.setValue(WordTarget, 'wordId', entry.id);
+    this.restoreAwake(target);
     target.addComponent(RayInteractable);
-    console.info(`[Word] room target claimed: ${label} -> ${entry.target}`);
+    if (this.persisted && this.tableOrigin) {
+      this.persisted.tableRelative[entry.id] = toTableRelative(
+        { x: origin.x, y: origin.y + 0.3, z: origin.z }, this.tableOrigin);
+      this.persistProgress();
+    }
+    console.info(`[Word] room target claimed: ${label} -> ${entry.word}`);
   }
 
   update(delta: number): void {
@@ -182,7 +222,12 @@ export class WordSystem extends createSystem({
         bloom = Math.max(0, bloom - delta * 1.4);
         entity.setValue(WordTarget, 'bloom', bloom);
       }
-      const base = awake ? AWAKE : HUSH;
+      const base = awake ? AWAKE.clone() : HUSH.clone();
+      if (awake) {
+        // Fade-as-review: due cards desaturate awake objects back toward Hush.
+        const card = this.cards.get(entity.getValue(WordTarget, 'wordId') ?? '');
+        if (card) base.lerp(HUSH, fadeAmount(card, Date.now()));
+      }
       material.color.copy(base).lerp(WAKE, bloom);
       const pulse = awake ? 1 + bloom * 0.6 : 1 + Math.sin(this.elapsed * 2) * 0.04;
       object.scale.setScalar(pulse);
