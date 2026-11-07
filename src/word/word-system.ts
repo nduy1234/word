@@ -26,6 +26,10 @@ import { WordTarget } from './word-component.js';
 import { KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
 import { fadeAmount, gradeCard, newCard, type CardState } from './scheduler.js';
 import { load, save, toTableRelative, type SaveState } from './store.js';
+import { playSfx } from './sound.js';
+import { PauseGate } from './pause.js';
+import { DEFAULT_A11Y, palette, type A11y } from './accessibility.js';
+import { assessPerf } from './perf.js';
 
 const HUSH = new Color(0x7a8794); // docs/art.md Hush fog
 const WAKE = new Color(0xffb43a); // docs/art.md Wake warm
@@ -59,7 +63,10 @@ export class WordSystem extends createSystem({
   sceneMeshes: { required: [XRMesh] },
 }) {
   private claimedLabels = new Set<string>();
-  private paused = false;
+  private gate = new PauseGate();
+  private a11y: A11y = DEFAULT_A11Y;
+  private perfFrames = 0;
+  private perfLast = 0;
   private cards = new Map<string, CardState>();
   private persisted: SaveState | null = null;
   private tableOrigin: { x: number; y: number; z: number } | null = null;
@@ -70,6 +77,7 @@ export class WordSystem extends createSystem({
   init(): void {
     try {
       this.persisted = load(localStorage);
+      if (this.persisted.a11y) this.a11y = { ...DEFAULT_A11Y, ...this.persisted.a11y, captionScale: (this.persisted.a11y.captionScale as A11y['captionScale']) || 1 };
       this.cards = new Map(this.persisted.cards.map((c) => [c.wordId, c]));
     } catch { this.persisted = null; }
     try {
@@ -83,6 +91,7 @@ export class WordSystem extends createSystem({
         const entry = wordById(entity.getValue(WordTarget, 'wordId') ?? '');
         if (!entry) return;
         speak(entry);
+        playSfx('pop');
         const now0 = Date.now();
         const existing = this.cards.get(entry.id);
         const reviewable = entity.getValue(WordTarget, 'state') === 'awake' && existing && existing.dueAt <= now0;
@@ -93,6 +102,7 @@ export class WordSystem extends createSystem({
           const prev = this.cards.get(entry.id) ?? newCard(entry.id, now);
           this.cards.set(entry.id, gradeCard(prev, 4, now));
           this.persistProgress();
+          playSfx('wake');
           console.info(`[Word] woke ${entry.word} (${entry.ipa})`);
         }
       } catch (error) {
@@ -108,16 +118,22 @@ export class WordSystem extends createSystem({
       }
     });
 
+    // Pause/resume: visibility loss or blur pauses timers + saves; resume restores.
+    const onVis = () => { if (document.hidden) { this.gate.add('hidden'); this.persistProgress(); } else this.gate.remove('hidden'); };
+    const onBlur = () => { this.gate.add('blur'); this.persistProgress(); };
+    const onFocus = () => this.gate.remove('blur');
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('blur', onBlur); window.addEventListener('focus', onFocus);
+    // Hand-tracking loss: runtime dispatches 'word:hands-lost'/'word:hands-back' (device QA in docs/QA.md).
+    window.addEventListener('word:hands-lost', () => this.gate.add('hands-lost'));
+    window.addEventListener('word:hands-back', () => this.gate.remove('hands-lost'));
     this.cleanupFuncs.push(
+      () => document.removeEventListener('visibilitychange', onVis),
       this.world.visibilityState.subscribe((state) => {
-        this.paused = state !== VisibilityState.Visible && state !== VisibilityState.NonImmersive;
-        if (this.paused) {
-          try {
-            globalThis.speechSynthesis?.cancel();
-          } catch {
-            /* captions only */
-          }
-        }
+        if (state !== VisibilityState.Visible && state !== VisibilityState.NonImmersive) {
+          this.gate.add('session-end'); this.persistProgress();
+          try { globalThis.speechSynthesis?.cancel(); } catch { /* captions only */ }
+        } else this.gate.remove('session-end');
       }),
     );
   }
@@ -210,8 +226,19 @@ export class WordSystem extends createSystem({
   }
 
   update(delta: number): void {
-    if (this.paused) return;
+    if (this.gate.paused) return; // all timers frozen: Hush Rush, fade, bloom, onboarding
     this.elapsed += delta;
+    // Perf sample every 2s (dev log; budget enforced in docs/QA.md device pass).
+    this.perfFrames += 1;
+    const nowMs = performance.now();
+    if (!this.perfLast) this.perfLast = nowMs;
+    if (nowMs - this.perfLast >= 2000) {
+      const fps = Math.round((this.perfFrames * 1000) / (nowMs - this.perfLast));
+      const tris = this.queries.targets.entities.length * 800; // low-poly props, upper bound per mesh
+      const report = assessPerf({ fps, drawCalls: this.queries.targets.entities.length + 2, triangles: tris });
+      if (!report.ok) console.warn('[Word perf]', report.issues.join('; '));
+      this.perfFrames = 0; this.perfLast = nowMs;
+    }
     for (const entity of this.queries.targets.entities) {
       const object = entity.object3D as Mesh | null;
       if (!object || !(object.material instanceof MeshStandardMaterial)) continue;
@@ -222,14 +249,15 @@ export class WordSystem extends createSystem({
         bloom = Math.max(0, bloom - delta * 1.4);
         entity.setValue(WordTarget, 'bloom', bloom);
       }
-      const base = awake ? AWAKE.clone() : HUSH.clone();
+      const pal = palette(this.a11y);
+      const base = awake ? new Color(pal.awake) : new Color(pal.hush);
       if (awake) {
         // Fade-as-review: due cards desaturate awake objects back toward Hush.
         const card = this.cards.get(entity.getValue(WordTarget, 'wordId') ?? '');
         if (card) base.lerp(HUSH, fadeAmount(card, Date.now()));
       }
-      material.color.copy(base).lerp(WAKE, bloom);
-      const pulse = awake ? 1 + bloom * 0.6 : 1 + Math.sin(this.elapsed * 2) * 0.04;
+      material.color.copy(base).lerp(new Color(pal.wake), bloom);
+      const pulse = this.a11y.reducedMotion ? 1 : awake ? 1 + bloom * 0.6 : 1 + Math.sin(this.elapsed * 2) * 0.04;
       object.scale.setScalar(pulse);
     }
   }

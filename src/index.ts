@@ -13,6 +13,7 @@ import { WordSystem } from './word/word-system.js';
 import { cycleHelper, detectHelper, type HelperLang } from './word/helper.js';
 import { load, save } from './word/store.js';
 import { newStreak, visitStreak } from './word/progression.js';
+import { DEFAULT_A11Y, captionPx, cycleCaption, type A11y } from './word/accessibility.js';
 
 // Helper picker: auto-detect from locale, one tap/pinch cycles + confirms, saved.
 const helperBtn = document.getElementById('helper-picker') as HTMLButtonElement | null;
@@ -33,6 +34,23 @@ try {
   immersionBox?.addEventListener('change', () => {
     const s = load(localStorage); s.immersion = immersionBox.checked; save(localStorage, s);
   });
+  // Accessibility toggles (M4): high contrast, reduced motion, caption size — persisted.
+  const contrastBox = document.getElementById('a11y-contrast') as HTMLInputElement | null;
+  const motionBox = document.getElementById('a11y-motion') as HTMLInputElement | null;
+  const captionBtn = document.getElementById('a11y-caption') as HTMLButtonElement | null;
+  let a11y: A11y = { ...DEFAULT_A11Y, ...(state.a11y ?? {}), captionScale: ((state.a11y?.captionScale as A11y['captionScale']) || 1) };
+  const applyA11y = () => {
+    if (contrastBox) contrastBox.checked = a11y.highContrast;
+    if (motionBox) motionBox.checked = a11y.reducedMotion;
+    if (captionBtn) captionBtn.textContent = `Caption size: ${a11y.captionScale === 1 ? 'normal' : a11y.captionScale === 1.25 ? 'large' : 'extra large'}`;
+    const cap = document.getElementById('caption'); if (cap) cap.style.fontSize = `${captionPx(a11y)}px`;
+    document.body.style.filter = a11y.highContrast ? 'contrast(1.25)' : '';
+    const s = load(localStorage); s.a11y = a11y; save(localStorage, s);
+  };
+  applyA11y();
+  contrastBox?.addEventListener('change', () => { a11y = { ...a11y, highContrast: contrastBox.checked }; applyA11y(); });
+  motionBox?.addEventListener('change', () => { a11y = { ...a11y, reducedMotion: motionBox.checked }; applyA11y(); });
+  captionBtn?.addEventListener('click', () => { a11y = cycleCaption(a11y); applyA11y(); });
 } catch { /* picker optional; game continues English-only */ }
 
 const launchError = document.getElementById('launch-error');

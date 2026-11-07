@@ -15,6 +15,9 @@ export interface SaveState {
   ownedCosmetics?: string[];
   rushBest?: number;
   streak?: { lastDay: string; count: number; freezesLeft: number; weekKey: string };
+  a11y?: { highContrast: boolean; captionScale: number; reducedMotion: boolean; colorblindSafe: boolean };
+  onboarding?: string;
+  onboardingDone?: boolean;
 }
 
 export interface StorageLike {
