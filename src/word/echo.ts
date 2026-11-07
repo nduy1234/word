@@ -1,5 +1,5 @@
 /** Echo agent client: /api/echo, 5s timeout, schema-validated, scripted fallback. Thinking callback for animation. */
-import { validateEchoResponse, type EchoResponse } from './ai-schema.js';
+import { validateEchoResponse, spellFromIds, type EchoResponse } from './ai-schema.js';
 import { wordById } from './pack.js';
 
 export const SCRIPTED_ECHO: EchoResponse[] = [
@@ -23,6 +23,7 @@ export async function askEcho(input: { knownIds: string[]; justWokeId?: string; 
     if (!res.ok) throw new Error('echo-http');
     const valid = validateEchoResponse(await res.json(), new Set(input.knownIds));
     if (!valid) throw new Error('echo-schema');
+    if (valid.spell.length && !spellFromIds(valid.spell, wordById)) throw new Error('echo-spell'); // grammar-invalid spell: never trust model output
     if (valid.newWordId && !wordById(valid.newWordId) && !input.knownIds.includes(valid.newWordId)) { /* id checked server-side too; keep line, drop unknown new word */ valid.newWordId = null; }
     return { data: valid, source: 'ai' };
   } catch {

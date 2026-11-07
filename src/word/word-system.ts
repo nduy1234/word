@@ -30,6 +30,8 @@ import { playSfx } from './sound.js';
 import { PauseGate } from './pause.js';
 import { DEFAULT_A11Y, palette, type A11y } from './accessibility.js';
 import { assessPerf } from './perf.js';
+import { nextOnboarding, onboardingCaption, type OnbStep } from './onboarding.js';
+import { askEcho } from './echo.js';
 
 const HUSH = new Color(0x7a8794); // docs/art.md Hush fog
 const WAKE = new Color(0xffb43a); // docs/art.md Wake warm
@@ -67,11 +69,13 @@ export class WordSystem extends createSystem({
   private a11y: A11y = DEFAULT_A11Y;
   private perfFrames = 0;
   private perfLast = 0;
+  private onbStep: OnbStep = 'fog';
+  private echoCalls = 0;
   private cards = new Map<string, CardState>();
   private persisted: SaveState | null = null;
   private tableOrigin: { x: number; y: number; z: number } | null = null;
   private elapsed = 0;
-  private dioramaParts: { object: Mesh; offsetX: number }[] = [];
+  private dioramaParts: { object: Mesh; offsetX: number; isTable?: boolean }[] = [];
   private dioramaOnRealTable = false;
 
   init(): void {
@@ -103,6 +107,20 @@ export class WordSystem extends createSystem({
           this.cards.set(entry.id, gradeCard(prev, 4, now));
           this.persistProgress();
           playSfx('wake');
+          // Onboarding advance (first session only, captions only).
+          if (!this.persisted?.onboardingDone && this.onbStep !== 'done') {
+            if (this.onbStep === 'fog') this.onbStep = 'poke-table';
+            this.onbStep = nextOnboarding(this.onbStep, entry.id === 'table' ? 'poke:table' : `wake:${entry.id}`);
+            try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: onboardingCaption(this.onbStep) })); } catch { /* no DOM */ }
+            if (this.onbStep === 'done' && this.persisted) { this.persisted.onboardingDone = true; this.persistProgress(); }
+          }
+          // Echo reacts to wake (max 3/session, offline scripted fallback inside askEcho).
+          if (this.echoCalls < 3) {
+            this.echoCalls += 1;
+            void askEcho({ knownIds: [...this.cards.keys()], justWokeId: entry.id }).then((r) => {
+              try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: r.data.line })); } catch { /* no DOM */ }
+            }).catch(() => { /* Echo optional */ });
+          }
           console.info(`[Word] woke ${entry.word} (${entry.ipa})`);
         }
       } catch (error) {
@@ -163,7 +181,7 @@ export class WordSystem extends createSystem({
     tableEntity.setValue(WordTarget, 'wordId', 'table');
     this.restoreAwake(tableEntity);
     tableEntity.addComponent(RayInteractable);
-    this.dioramaParts.push({ object: table, offsetX: 0 });
+    this.dioramaParts.push({ object: table, offsetX: 0, isTable: true });
 
     const geometries = [
       new CylinderGeometry(0.035, 0.03, 0.09, 20), // cup
@@ -199,10 +217,9 @@ export class WordSystem extends createSystem({
       this.tableOrigin = { ...origin };
       this.dioramaOnRealTable = true;
       for (const part of this.dioramaParts) {
-        const isTableTop = part.offsetX === 0 && part.object.geometry.type === 'BoxGeometry';
         part.object.position.set(
           origin.x + part.offsetX,
-          isTableTop ? origin.y + 0.03 : origin.y + 0.11,
+          part.isTable ? origin.y + 0.03 : origin.y + 0.11,
           origin.z,
         );
       }

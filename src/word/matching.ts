@@ -54,6 +54,10 @@ export function matchTranscript(transcript: string, targetWord: string, targetIp
   const heard = normalize(transcript);
   const target = normalize(targetWord);
   if (!heard) return { result: 'wrong', heard };
+  // Phrasal verbs: whole phrase as contiguous tokens (never substring: "in" must not match "window").
+  const ht = heard.split(' '); const tt = target.split(' ');
+  const phrase = tt.length > 1 && ht.some((_, i) => tt.every((w, j) => ht[i + j] === w));
+  if (heard === target || phrase) return { result: 'exact', heard };
   const heardWords = heard.split(' ');
   const heardWord = heardWords.find((w) => w === target) ?? heardWords[heardWords.length - 1] ?? heard;
   if (heardWord === target) return { result: 'exact', heard };

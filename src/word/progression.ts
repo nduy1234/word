@@ -13,6 +13,7 @@ export function districtProgress(d: District, awake: Set<string>): number {
 export function unlockedDistricts(awake: Set<string>): string[] {
   const out = ['home'];
   for (let i = 1; i < DISTRICTS.length; i++) {
+    if (DISTRICTS[i - 1].wordIds.length === 0) { out.push(DISTRICTS[i].id); continue; } // empty district never blocks chain
     if (districtProgress(DISTRICTS[i - 1], awake) >= 0.8) out.push(DISTRICTS[i].id); else break;
   }
   return out;

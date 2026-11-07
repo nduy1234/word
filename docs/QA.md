@@ -64,6 +64,7 @@ Code-side counts (this build, fallback diorama + claimed room targets):
 **Device measurement (fill in when run):**
 | Device | Room | FPS min/avg (overlay, 30-min soak A8) | Draw calls (renderer.info via devtools) | Tris | Verdict |
 |---|---|---|---|---|---|
+| Emulator/code audit (not device) | fallback diorama | not measured — device only | ~20 (6 diorama meshes + ≤12 markers + panel) | ≲9k (boxes 12, cylinders ≤96, spheres 640 tris) | Under budget code-side; device fps still required |
 | Quest 3 | | | | | |
 | Quest 3S | | | | | |
 
