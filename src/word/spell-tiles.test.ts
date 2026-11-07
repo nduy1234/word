@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTiles, castSentence, homeOffset, slotOffset, TILE_COLORS, withinSnap, SNAP_RADIUS_M } from './spell-tiles.js';
+import { buildTiles, castSentence, homeOffset, orderBySnap, slotOffset, stretchArmed, TILE_COLORS, withinSnap, SNAP_RADIUS_M, STRETCH_ARM_MAX_M } from './spell-tiles.js';
 import { emptySpell, isComplete, spellText, trySnap } from './spell.js';
 
 describe('spell tile runtime helpers', () => {
@@ -33,5 +33,14 @@ describe('spell tile runtime helpers', () => {
     expect(homeOffset(0, 10).x).toBeLessThan(homeOffset(9, 10).x);
     expect(homeOffset(0, 10).z).toBeGreaterThan(slotOffset(0, 3).z);
     expect(Math.abs(slotOffset(0, 3).x + slotOffset(2, 3).x)).toBeLessThan(1e-9);
+  });
+  it('relayout follows snap order, not tray order (door landmark after "on")', () => {
+    const recs = [{ id: 'door', snapSeq: 4 }, { id: 'on', snapSeq: 3 }, { id: 'open', snapSeq: 0 }, { id: 'apple', snapSeq: -1 }];
+    expect(orderBySnap(recs).map((r) => r.id)).toEqual(['open', 'on', 'door']);
+  });
+  it('pinch-stretch arms only hands-close', () => {
+    expect(stretchArmed(0.2)).toBe(true);
+    expect(stretchArmed(STRETCH_ARM_MAX_M + 0.1)).toBe(false);
+    expect(stretchArmed(null)).toBe(false);
   });
 });

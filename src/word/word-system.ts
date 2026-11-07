@@ -27,7 +27,7 @@ import {
 } from '@iwsdk/core';
 import { SpellTile, WordTarget } from './word-component.js';
 import { emptySpell, isComplete, spellEffect, spellText, stretchTile, trySnap, type Spell, type Tile } from './spell.js';
-import { buildTiles, castSentence, homeOffset, slotOffset, TILE_COLORS, withinSnap, STRETCH_RATIO } from './spell-tiles.js';
+import { buildTiles, castSentence, homeOffset, orderBySnap, slotOffset, stretchArmed, TILE_COLORS, withinSnap, STRETCH_RATIO } from './spell-tiles.js';
 import { KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
 import { fadeAmount, gradeCard, newCard, type CardState } from './scheduler.js';
 import { load, save, toTableRelative, type SaveState } from './store.js';
@@ -86,14 +86,14 @@ export class WordSystem extends createSystem({
   private grabbedIds = new Set<string>();
   private pendingPlace: { wordId: string; object: Mesh; releasedAt: number; lastX: number; lastY: number; lastZ: number } | null = null;
   private tableObject: Mesh | null = null;
-  private tileRecs: { tile: Tile; object: Mesh; entity: { getValue: Function; setValue: Function; addComponent: Function; removeComponent: Function }; home: { x: number; y: number; z: number }; redraw: (t: string) => void; returning: boolean }[] = [];
+  private tileRecs: { tile: Tile; object: Mesh; entity: { getValue: Function; setValue: Function; addComponent: Function; removeComponent: Function }; home: { x: number; y: number; z: number }; redraw: (t: string) => void; returning: boolean; snapSeq: number }[] = [];
   private spell: Spell = emptySpell();
   private stretchStart: number | null = null;
   private cards = new Map<string, CardState>();
   private persisted: SaveState | null = null;
   private tableOrigin: { x: number; y: number; z: number } | null = null;
   private elapsed = 0;
-  private dioramaParts: { object: Mesh; offsetX: number; isTable?: boolean }[] = [];
+  private dioramaParts: { object: Mesh; offsetX: number; isTable?: boolean; isTile?: boolean }[] = [];
   private dioramaOnRealTable = false;
 
   init(): void {
@@ -183,6 +183,7 @@ export class WordSystem extends createSystem({
         const r = trySnap(this.spell, rec.tile);
         if (!r.ok) { this.caption(r.hint); playSfx('boing'); rec.returning = true; return; } // repel
         this.spell = r.spell;
+        rec.snapSeq = this.spell.tiles.length - 1;
         rec.entity.setValue(SpellTile, 'snapped', true);
         rec.entity.removeComponent(OneHandGrabbable);
         this.relayoutSpell();
@@ -310,8 +311,8 @@ export class WordSystem extends createSystem({
         entity.setValue(SpellTile, 'kind', tile.kind);
         entity.addComponent(RayInteractable);
         entity.addComponent(OneHandGrabbable);
-        this.tileRecs.push({ tile, object, entity: entity as never, home: { ...object.position }, redraw, returning: false });
-        this.dioramaParts.push({ object, offsetX: home.x });
+        this.tileRecs.push({ tile, object, entity: entity as never, home: { ...object.position }, redraw, returning: false, snapSeq: -1 });
+        this.dioramaParts.push({ object, offsetX: home.x, isTile: true });
       } catch (error) { console.warn('[Word] spell tile failed', tile.entryId, error); }
     });
   }
@@ -327,7 +328,7 @@ export class WordSystem extends createSystem({
   }
 
   private relayoutSpell(): void {
-    const snapped = this.tileRecs.filter((r) => r.entity.getValue(SpellTile, 'snapped'));
+    const snapped = orderBySnap(this.tileRecs);
     snapped.forEach((r, i) => { const p = this.slotWorld(i, snapped.length); r.object.position.set(p.x, p.y, p.z); });
   }
 
@@ -335,7 +336,7 @@ export class WordSystem extends createSystem({
   private castSpell(): void {
     const effect = spellEffect(this.spell);
     if (!effect || !isComplete(this.spell)) return;
-    this.caption(`✨ ${castSentence(spellText(this.spell))}`);
+    const sentence = castSentence(spellText(this.spell));
     playSfx('wake');
     for (const entity of this.queries.targets.entities) {
       if ((entity.getValue(WordTarget, 'wordId') ?? '') !== effect.objectId) continue;
@@ -345,13 +346,18 @@ export class WordSystem extends createSystem({
       this.cards.set(effect.objectId, gradeCard(prev, 4, Date.now()));
       this.persistProgress();
     }
+    let advanced = false;
     if (!this.persisted?.onboardingDone && this.onbStep === 'first-spell') {
+      const before = this.onbStep;
       this.onbStep = nextOnboarding(this.onbStep, spellText(this.spell) === 'open the door' ? 'spell:open-door' : 'spell:cast');
-      this.caption(onboardingCaption(this.onbStep));
+      advanced = this.onbStep !== before;
       if (this.onbStep === 'done' && this.persisted) { this.persisted.onboardingDone = true; this.persistProgress(); }
     }
+    // One caption only: cast line, plus next-step hint when onboarding advances.
+    this.caption(advanced && this.onbStep !== 'done' ? `✨ ${sentence} Next: ${onboardingCaption(this.onbStep)}` : `✨ ${sentence}`);
     for (const r of this.tileRecs) {
       if (!r.entity.getValue(SpellTile, 'snapped')) continue;
+      r.snapSeq = -1;
       r.entity.setValue(SpellTile, 'snapped', false);
       r.entity.addComponent(OneHandGrabbable);
       r.returning = true;
@@ -377,7 +383,7 @@ export class WordSystem extends createSystem({
         part.object.position.set(
           origin.x + part.offsetX,
           part.isTable ? origin.y + 0.03 : origin.y + 0.11,
-          origin.z,
+          origin.z + (part.isTile ? 0.26 : 0), // tiles keep front-edge tray row, clear of spell slots
         );
       }
       console.info('[Word] diorama moved onto real table');
@@ -441,7 +447,7 @@ export class WordSystem extends createSystem({
     if (nowMs - this.perfLast >= 2000) {
       const fps = Math.round((this.perfFrames * 1000) / (nowMs - this.perfLast));
       const tris = this.queries.targets.entities.size * 800; // low-poly props, upper bound per mesh
-      const report = assessPerf({ fps, drawCalls: this.queries.targets.entities.size + 2, triangles: tris });
+      const report = assessPerf({ fps, drawCalls: this.queries.targets.entities.size + 2 + this.tileRecs.length * 6, triangles: tris });
       if (!report.ok) console.warn('[Word perf]', report.issues.join('; '));
       this.perfFrames = 0; this.perfLast = nowMs;
     }
@@ -461,7 +467,7 @@ export class WordSystem extends createSystem({
         for (const entity of this.queries.grabbedTiles.entities) {
           const rec = this.tileRecs.find((r) => (r.entity as unknown) === entity);
           if (!rec || rec.tile.kind !== 'noun') continue;
-          if (this.stretchStart === null) { this.stretchStart = handDist; continue; }
+          if (this.stretchStart === null) { if (stretchArmed(handDist)) this.stretchStart = handDist; continue; }
           if (handDist > this.stretchStart * STRETCH_RATIO) {
             const s = stretchTile(rec.tile);
             if (s.ok) { rec.tile = s.tile; rec.redraw(s.tile.text); this.caption(`${s.tile.text}!`); playSfx('whoosh'); }

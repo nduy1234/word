@@ -42,6 +42,17 @@ export function slotOffset(index: number, spellLength: number): { x: number; y: 
 
 export function withinSnap(distanceM: number): boolean { return distanceM <= SNAP_RADIUS_M; }
 
+/** Snapped tiles display in snap order, never tray order. */
+export function orderBySnap<T extends { snapSeq: number }>(recs: T[]): T[] {
+  return recs.filter((r) => r.snapSeq >= 0).sort((a, b) => a.snapSeq - b.snapSeq);
+}
+
+/** Pinch-stretch arms only when hands start close (both pinching the tile). */
+export const STRETCH_ARM_MAX_M = 0.35;
+export function stretchArmed(startDistM: number | null): boolean {
+  return startDistM !== null && startDistM <= STRETCH_ARM_MAX_M;
+}
+
 /** Cast line shown/spoken on flick-cast: "open the door!" */
 export function castSentence(text: string): string {
   const t = text.trim();
