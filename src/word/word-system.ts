@@ -234,8 +234,8 @@ export class WordSystem extends createSystem({
     if (!this.perfLast) this.perfLast = nowMs;
     if (nowMs - this.perfLast >= 2000) {
       const fps = Math.round((this.perfFrames * 1000) / (nowMs - this.perfLast));
-      const tris = this.queries.targets.entities.length * 800; // low-poly props, upper bound per mesh
-      const report = assessPerf({ fps, drawCalls: this.queries.targets.entities.length + 2, triangles: tris });
+      const tris = this.queries.targets.entities.size * 800; // low-poly props, upper bound per mesh
+      const report = assessPerf({ fps, drawCalls: this.queries.targets.entities.size + 2, triangles: tris });
       if (!report.ok) console.warn('[Word perf]', report.issues.join('; '));
       this.perfFrames = 0; this.perfLast = nowMs;
     }

@@ -2,7 +2,7 @@
 export type OnbStep = 'fog' | 'poke-table' | 'ghost-flick' | 'first-spell' | 'place-cup' | 'done';
 export interface GhostDemo { gesture: 'poke' | 'pinch-flick' | 'snap' | 'place'; targetId: string; durationMs: number }
 export const ONBOARDING: { step: OnbStep; caption: string; ghost: GhostDemo | null; goal: string }[] = [
-  { step: 'fog', caption: 'The Hush is here… Echo needs your help!', ghost: null, goal: 'watch' },
+  { step: 'fog', caption: 'The Hush is here…', ghost: null, goal: 'watch' },
   { step: 'poke-table', caption: 'table', ghost: { gesture: 'poke', targetId: 'table', durationMs: 2000 }, goal: 'poke:table' },
   { step: 'ghost-flick', caption: 'Pinch… and flick!', ghost: { gesture: 'pinch-flick', targetId: 'window', durationMs: 3000 }, goal: 'wake:window' },
   { step: 'first-spell', caption: 'open the door', ghost: { gesture: 'snap', targetId: 'door', durationMs: 3000 }, goal: 'spell:open-door' },
