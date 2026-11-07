@@ -12,7 +12,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
   if (rateLimited(`pack:${clientKey(req)}`, 10)) { res.status(429).json({ error: 'rate-limited' }); return; }
   const body = (typeof req.body === 'string' ? parseJson(req.body) : req.body) as { labels?: unknown } | null;
   const labels = sanitizeLabels(body?.labels);
-  const cacheKey = `pack:${labels.join(',')}`;
+  const cacheKey = `pack:${[...labels].sort().join(',')}`;
   const hit = cached(cacheKey, 3_600_000);
   if (hit) { res.status(200).json(hit); return; }
   const system = 'Return ONLY strict JSON {"words":[...]}. Each word: id, word, ipa (/.../), partOfSpeech (noun|verb|phrasalVerb|preposition|adjective), plural+article(a|an) for nouns, cefr A1|A2, example containing the word, helper {es,vi}, sceneLabel or propId (exactly one, nouns only), wakeFx "bloom", rarity common|rare|gold, audio "audio/en-US/<id>.mp3". English only targets. Ages 10+. No brands.';

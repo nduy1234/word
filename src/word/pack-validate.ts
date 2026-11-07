@@ -5,8 +5,12 @@ export function validatePack(words: WordEntry[], packId = 'pack'): string[] {
   const errors: string[] = [];
   const ids = new Set<string>();
   for (const w of words) {
+    if (!w || typeof w !== 'object') { errors.push(`${packId}/?: entry must be an object`); continue; }
     const t = `${packId}/${w.id || '?'}`;
     if (!w.id || !w.word) errors.push(`${t}: id and word required`);
+    if (!['noun', 'verb', 'phrasalVerb', 'preposition', 'adjective'].includes(w.partOfSpeech))
+      errors.push(`${t}: partOfSpeech invalid`);
+    if (!w.example) errors.push(`${t}: example required`);
     if (ids.has(w.id)) errors.push(`${t}: duplicate id`);
     ids.add(w.id);
     if (!w.ipa?.startsWith('/') || !w.ipa?.endsWith('/')) errors.push(`${t}: ipa needs /slashes/`);

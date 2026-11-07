@@ -7,6 +7,9 @@ import { checkPreposition, classifyRelation, makeTableFrame, type BoxLike } from
 import { spellFromIds } from './ai-schema.js';
 import { wordById } from './pack.js';
 import { HandLossTracker, sourceIsHand, HAND_GRACE_MS } from './hand-presence.js';
+import { validatePack } from './pack-validate.js';
+import { validateRoomPack } from './ai-schema.js';
+import transcribeHandler from '../../api/transcribe.js';
 
 const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); } }; };
 const packJson = (id: string) => ({ words: [{ id, word: id, ipa: '/t/', partOfSpeech: 'noun', plural: `${id}s`, article: 'a', cefr: 'A1', example: `The ${id} is here.`, helper: { es: 'x', vi: 'y' }, sceneLabel: id, wakeFx: 'bloom', rarity: 'common', audio: `audio/en-US/${id}.mp3` }] });
@@ -50,6 +53,17 @@ describe('bugfix guards', () => {
     const nearFront: BoxLike = { center: { x: 0, y: 0.82, z: -0.55 }, size: { x: 0.07, y: 0.09, z: 0.07 } };
     expect(classifyRelation(nearFront, tableBox, frame)).toBe('in-front-of');
     expect(spellFromIds(['article-foo', 'cup'], wordById)).toBeNull();
+  });
+  it('pack validation: malformed AI entries rejected, never throw', () => {
+    expect(() => validatePack([null, 42, 'x'] as never)).not.toThrow();
+    expect(validatePack([null] as never).length).toBeGreaterThan(0);
+    expect(validateRoomPack({ words: [null] })).toBeNull();
+    expect(validatePack([{ id: 'x', word: 'x', ipa: '/x/', partOfSpeech: 'adverb', cefr: 'A1', helper: { es: 'a', vi: 'b' }, audio: 'a.mp3', sceneLabel: 'x' }] as never).join(' ')).toContain('partOfSpeech');
+  });
+  it('/api/transcribe: method guard + no-key 503 (never forwards empty body)', async () => {
+    const mk = () => { const r = { code: 0, body: undefined as unknown, status(c: number) { r.code = c; return { json(b: unknown) { r.body = b; } }; } }; return r; };
+    const a = mk(); await transcribeHandler({ method: 'GET', headers: {} } as never, a as never); expect(a.code).toBe(405);
+    const b = mk(); await transcribeHandler({ method: 'POST', headers: {} } as never, b as never); expect(b.code).toBe(503);
   });
   it('hand-loss tracker: grace period, immersive-only, back transition', () => {
     const t = new HandLossTracker();
