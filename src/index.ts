@@ -12,12 +12,15 @@ import { FpsSystem } from './word/fps-system.js';
 import { WordSystem } from './word/word-system.js';
 import { cycleHelper, detectHelper, type HelperLang } from './word/helper.js';
 import { load, save } from './word/store.js';
+import { newStreak, visitStreak } from './word/progression.js';
 
 // Helper picker: auto-detect from locale, one tap/pinch cycles + confirms, saved.
 const helperBtn = document.getElementById('helper-picker') as HTMLButtonElement | null;
 const immersionBox = document.getElementById('immersion') as HTMLInputElement | null;
 try {
   const state = load(localStorage);
+  state.streak = visitStreak(state.streak ?? newStreak(Date.now()), Date.now()); // Daily Fog streak + freezes
+  save(localStorage, state);
   let helper: HelperLang = state.helperLang === 'auto' || !state.helperLang
     ? detectHelper(navigator.language) : (state.helperLang as HelperLang);
   if (immersionBox) immersionBox.checked = state.immersion;

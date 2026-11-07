@@ -98,7 +98,7 @@ A fog called the Hush stole the names of everything in YOUR room. Through passth
   - **Word order:** adjective tile only snaps before a noun ("the red cup"); wrong order visibly repels (no snap, tile pushes back).
   - **Articles:** "a" / "an" tiles snap only to nouns whose stored `article` matches ("a cup," "an apple"). Article stored in pack data, never computed at runtime.
   - **Plurals:** pinch-stretch a noun tile to pluralize it ("cup" → "cups", from stored `plural`) and the prop multiplies on the table.
-  - **Spatial prepositions (signature MR moment):** Echo says "Put the cup under the table" and player physically places it. Game checks relation (on, under, next to, in front of, behind) against real geometry. Deterministic, unit-tested geometric functions relative to table plane and player view — design in reply/docs, implementation pending approval.
+  - **Spatial prepositions (signature MR moment):** Echo says "Put the cup under the table" and player physically places it. Game checks relation (on, under, next to, in front of, behind) against real geometry. Deterministic, unit-tested geometric functions relative to table plane and player view — implemented in `src/word/spell.ts` + `src/word/preposition-check.ts` (pure logic, unit-tested; XR tile entities wire next). `in` excluded in v1 (no cavity geometry guarantee).
   - Start: 8 verbs, 6 phrasal verbs, 6 prepositions, 8 adjectives (colors and sizes). Tile color = part of speech, never gender.
 - **Palm-up menu:** look at your open palm to see the Atlas, today's quest, and settings. Pinch to select.
 - **Alternatives (Accessibility):**

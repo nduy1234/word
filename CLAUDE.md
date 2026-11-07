@@ -41,7 +41,7 @@ npm run dev            # IWSDK CLI-managed dev server (managed browser + emulato
 npm run typecheck      # tsc --noEmit — always run before testing; type errors silently stop systems
 npm run build          # vite build
 npm run dev:status     # iwsdk dev status
-npm test               # NOT yet configured — add vitest for scheduler/pack/spell tests in M1
+npm test               # vitest — scheduler/pack/spell/preposition tests
 ```
 
 ## Working style

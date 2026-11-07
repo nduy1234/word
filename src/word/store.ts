@@ -11,6 +11,10 @@ export interface SaveState {
   helperLang: string;
   immersion: boolean;
   tableRelative: Record<string, Vec3Like>; // wordId -> offset from table origin
+  petals?: number;
+  ownedCosmetics?: string[];
+  rushBest?: number;
+  streak?: { lastDay: string; count: number; freezesLeft: number; weekKey: string };
 }
 
 export interface StorageLike {
