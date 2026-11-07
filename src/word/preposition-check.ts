@@ -27,6 +27,7 @@ const UNDER_OVERLAP = 0.5;
 const NEXT_TO_MIN_M = 0.02;
 const NEXT_TO_MAX_M = 0.3;
 const LEVEL_BAND_M = 0.3; // next-to: roughly same height as landmark
+const FRONT_MAX_M = 0.6; // in-front/behind: max gap along view axis — across-room is not "in front of"
 const HYSTERESIS_M = 0.02; // within this outside a threshold = 'almost'
 export const SETTLE_MS = 300; // no grading while held or still moving
 
@@ -96,8 +97,10 @@ export function classifyRelation(subject: BoxLike, target: BoxLike, frame: Table
   if (sTop <= tTop + slack && overlapRatio >= UNDER_OVERLAP - slack) return 'under';
 
   const lateralOverlap = overlapX > -slack;
-  if (s.cz - s.hz >= t.cz + t.hz - slack && lateralOverlap) return 'in-front-of';
-  if (s.cz + s.hz <= t.cz - t.hz + slack && lateralOverlap) return 'behind';
+  const gapFront = (s.cz - s.hz) - (t.cz + t.hz);
+  const gapBehind = (t.cz - t.hz) - (s.cz + s.hz);
+  if (gapFront >= -slack && gapFront <= FRONT_MAX_M + slack && lateralOverlap) return 'in-front-of';
+  if (gapBehind >= -slack && gapBehind <= FRONT_MAX_M + slack && lateralOverlap) return 'behind';
 
   const gapX = Math.max(0, Math.abs(s.cx - t.cx) - (s.hx + t.hx));
   const gapZ = Math.max(0, Math.abs(s.cz - t.cz) - (s.hz + t.hz));

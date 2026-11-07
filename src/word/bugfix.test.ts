@@ -3,6 +3,9 @@ import { matchTranscript } from './matching.js';
 import { unlockedDistricts } from './progression.js';
 import { fetchRoomPack } from './room-pack-client.js';
 import { askEcho } from './echo.js';
+import { checkPreposition, classifyRelation, makeTableFrame, type BoxLike } from './preposition-check.js';
+import { spellFromIds } from './ai-schema.js';
+import { wordById } from './pack.js';
 
 const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); } }; };
 const packJson = (id: string) => ({ words: [{ id, word: id, ipa: '/t/', partOfSpeech: 'noun', plural: `${id}s`, article: 'a', cefr: 'A1', example: `The ${id} is here.`, helper: { es: 'x', vi: 'y' }, sceneLabel: id, wakeFx: 'bloom', rarity: 'common', audio: `audio/en-US/${id}.mp3` }] });
@@ -36,5 +39,15 @@ describe('bugfix guards', () => {
     expect(r.source).toBe('scripted');
     const good = async () => ({ ok: true, json: async () => ({ line: 'Open it', newWordId: null, spell: ['open', 'article-the', 'window'] }) });
     expect((await askEcho({ knownIds: [] }, { fetchFn: good as never })).source).toBe('ai');
+  });
+  it('preposition distance cap: across-room is not in-front-of; fake article rejected', () => {
+    const frame = makeTableFrame({ x: 0, y: 0.75, z: -1.15 }, { x: 0, y: 1.6, z: 0 });
+    const tableBox: BoxLike = { center: { x: 0, y: 0.75, z: -1.15 }, size: { x: 1.1, y: 0.05, z: 0.7 } };
+    const farFront: BoxLike = { center: { x: 0, y: 0.82, z: 0.9 }, size: { x: 0.07, y: 0.09, z: 0.07 } }; // ~1.7m in front
+    expect(classifyRelation(farFront, tableBox, frame)).not.toBe('in-front-of');
+    expect(checkPreposition('in front of', farFront, tableBox, frame, { stillMs: 1000 }).result).toBe('wrong');
+    const nearFront: BoxLike = { center: { x: 0, y: 0.82, z: -0.55 }, size: { x: 0.07, y: 0.09, z: 0.07 } };
+    expect(classifyRelation(nearFront, tableBox, frame)).toBe('in-front-of');
+    expect(spellFromIds(['article-foo', 'cup'], wordById)).toBeNull();
   });
 });

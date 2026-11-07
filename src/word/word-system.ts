@@ -110,7 +110,12 @@ export class WordSystem extends createSystem({
           // Onboarding advance (first session only, captions only).
           if (!this.persisted?.onboardingDone && this.onbStep !== 'done') {
             if (this.onbStep === 'fog') this.onbStep = 'poke-table';
-            this.onbStep = nextOnboarding(this.onbStep, entry.id === 'table' ? 'poke:table' : `wake:${entry.id}`);
+            // Aliases until spell/placement runtimes land: waking door/cup completes those steps.
+            const goal = entry.id === 'table' ? 'poke:table'
+              : this.onbStep === 'first-spell' && entry.id === 'door' ? 'spell:open-door'
+              : this.onbStep === 'place-cup' && entry.id === 'cup' ? 'place:cup-on-table'
+              : `wake:${entry.id}`;
+            this.onbStep = nextOnboarding(this.onbStep, goal);
             try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: onboardingCaption(this.onbStep) })); } catch { /* no DOM */ }
             if (this.onbStep === 'done' && this.persisted) { this.persisted.onboardingDone = true; this.persistProgress(); }
           }

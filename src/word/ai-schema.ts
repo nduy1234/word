@@ -37,6 +37,7 @@ export function validateEchoResponse(v: unknown, knownIds: Set<string>): EchoRes
 export function spellFromIds(ids: string[], byId: (id: string) => WordEntry | undefined): Spell | null {
   let spell = emptySpell();
   for (const id of ids) {
+    if (id.startsWith('article-') && !['article-a', 'article-an', 'article-the'].includes(id)) return null;
     const tile = id.startsWith('article-') ? articleTile(id.slice(8) as 'a' | 'an' | 'the')
       : (() => { const e = byId(id); return e ? tileFor(e) : null; })();
     if (!tile) return null;
