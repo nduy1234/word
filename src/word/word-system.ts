@@ -14,8 +14,10 @@ import {
   Color,
   createSystem,
   CylinderGeometry,
+  Grabbed,
   Mesh,
   MeshStandardMaterial,
+  OneHandGrabbable,
   Pressed,
   RayInteractable,
   SphereGeometry,
@@ -32,6 +34,8 @@ import { DEFAULT_A11Y, palette, type A11y } from './accessibility.js';
 import { assessPerf } from './perf.js';
 import { nextOnboarding, onboardingCaption, type OnbStep } from './onboarding.js';
 import { askEcho } from './echo.js';
+import { HandLossTracker, sourceIsHand } from './hand-presence.js';
+import { checkPreposition, makeTableFrame, SETTLE_MS, type BoxLike } from './preposition-check.js';
 
 const HUSH = new Color(0x7a8794); // docs/art.md Hush fog
 const WAKE = new Color(0xffb43a); // docs/art.md Wake warm
@@ -62,6 +66,7 @@ function speak(entry: WordEntry): void {
 export class WordSystem extends createSystem({
   targets: { required: [WordTarget] },
   pressedTargets: { required: [WordTarget, Pressed] },
+  grabbedTargets: { required: [WordTarget, Grabbed] },
   sceneMeshes: { required: [XRMesh] },
 }) {
   private claimedLabels = new Set<string>();
@@ -71,6 +76,11 @@ export class WordSystem extends createSystem({
   private perfLast = 0;
   private onbStep: OnbStep = 'fog';
   private echoCalls = 0;
+  private handTracker = new HandLossTracker();
+  private immersive = false;
+  private grabbedIds = new Set<string>();
+  private pendingPlace: { wordId: string; object: Mesh; releasedAt: number; lastX: number; lastY: number; lastZ: number } | null = null;
+  private tableObject: Mesh | null = null;
   private cards = new Map<string, CardState>();
   private persisted: SaveState | null = null;
   private tableOrigin: { x: number; y: number; z: number } | null = null;
@@ -133,6 +143,19 @@ export class WordSystem extends createSystem({
       }
     });
 
+    this.queries.grabbedTargets.subscribe('qualify', (entity) => {
+      const id = entity.getValue(WordTarget, 'wordId') ?? '';
+      if (id) { this.grabbedIds.add(id); if (this.pendingPlace?.wordId === id) this.pendingPlace = null; }
+    });
+    this.queries.grabbedTargets.subscribe('disqualify', (entity) => {
+      try {
+        const id = entity.getValue(WordTarget, 'wordId') ?? '';
+        this.grabbedIds.delete(id);
+        const object = entity.object3D as Mesh | null;
+        if (id && object) this.pendingPlace = { wordId: id, object, releasedAt: performance.now(), lastX: object.position.x, lastY: object.position.y, lastZ: object.position.z };
+      } catch { /* placement optional */ }
+    });
+
     this.queries.sceneMeshes.subscribe('qualify', (entity) => {
       try {
         this.claimSceneMesh(entity);
@@ -157,6 +180,7 @@ export class WordSystem extends createSystem({
           this.gate.add('session-end'); this.persistProgress();
           try { globalThis.speechSynthesis?.cancel(); } catch { /* captions only */ }
         } else this.gate.remove('session-end');
+        this.immersive = state === VisibilityState.Visible;
       }),
     );
   }
@@ -182,6 +206,7 @@ export class WordSystem extends createSystem({
     const table = new Mesh(new BoxGeometry(1.1, 0.05, 0.7), tableMaterial);
     table.position.set(0, 0.74, -1.15);
     const tableEntity = this.world.createTransformEntity(table);
+    this.tableObject = table;
     tableEntity.addComponent(WordTarget);
     tableEntity.setValue(WordTarget, 'wordId', 'table');
     this.restoreAwake(tableEntity);
@@ -204,6 +229,7 @@ export class WordSystem extends createSystem({
       entity.setValue(WordTarget, 'wordId', entry.id);
       this.restoreAwake(entity);
       entity.addComponent(RayInteractable);
+      if (entry.id === 'cup') entity.addComponent(OneHandGrabbable); // placement quests: grab, place, settle-grade
       this.dioramaParts.push({ object: prop, offsetX: -0.4 + index * 0.2 });
     });
   }
@@ -248,7 +274,38 @@ export class WordSystem extends createSystem({
   }
 
   update(delta: number): void {
+    // Hand-presence producer (verified API: input.xr.getPrimaryInputSource, .hand = hand-tracked).
+    try {
+      const xr = (this.world as unknown as { input?: { xr?: { getPrimaryInputSource(s: 'left' | 'right'): { hand?: unknown } | undefined } } }).input?.xr;
+      const present = sourceIsHand(xr?.getPrimaryInputSource('left')) || sourceIsHand(xr?.getPrimaryInputSource('right'));
+      const ev = this.handTracker.update(present, this.immersive, performance.now());
+      if (ev === 'lost') { this.gate.add('hands-lost'); this.persistProgress(); try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: 'Show your hands ✋' })); } catch { /* no DOM */ } }
+      if (ev === 'back') this.gate.remove('hands-lost');
+    } catch { /* input unavailable: visibility/blur pause still active */ }
     if (this.gate.paused) return; // all timers frozen: Hush Rush, fade, bloom, onboarding
+    // Placement grading: released prop, settled SETTLE_MS without moving -> check vs real table.
+    if (this.pendingPlace && this.tableObject) {
+      const p = this.pendingPlace; const o = p.object;
+      const moved = Math.hypot(o.position.x - p.lastX, o.position.y - p.lastY, o.position.z - p.lastZ);
+      if (moved > 0.002) { p.releasedAt = performance.now(); p.lastX = o.position.x; p.lastY = o.position.y; p.lastZ = o.position.z; }
+      else if (performance.now() - p.releasedAt >= SETTLE_MS) {
+        this.pendingPlace = null;
+        try {
+          const t = this.tableObject.position;
+          const cam = (this.world as unknown as { camera?: { position?: { x: number; y: number; z: number } } }).camera?.position;
+          const frame = makeTableFrame({ x: t.x, y: t.y, z: t.z }, cam ?? { x: t.x, y: 1.6, z: t.z + 1.15 });
+          const subject: BoxLike = { center: { x: o.position.x, y: o.position.y, z: o.position.z }, size: { x: 0.07, y: 0.09, z: 0.07 } };
+          const tableBox: BoxLike = { center: { x: t.x, y: t.y, z: t.z }, size: { x: 1.1, y: 0.05, z: 0.7 } };
+          const r = checkPreposition('on', subject, tableBox, frame, { stillMs: SETTLE_MS, targetName: 'the table' });
+          try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: r.hint })); } catch { /* no DOM */ }
+          playSfx(r.result === 'correct' ? 'snap' : r.result === 'almost' ? 'click' : 'boing');
+          if (r.result === 'correct' && !this.persisted?.onboardingDone) {
+            this.onbStep = nextOnboarding(this.onbStep, 'place:cup-on-table');
+            if (this.onbStep === 'done' && this.persisted) { this.persisted.onboardingDone = true; this.persistProgress(); }
+          }
+        } catch (error) { console.warn('[Word] placement check failed', error); }
+      }
+    }
     this.elapsed += delta;
     // Perf sample every 2s (dev log; budget enforced in docs/QA.md device pass).
     this.perfFrames += 1;

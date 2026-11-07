@@ -6,6 +6,7 @@ import { askEcho } from './echo.js';
 import { checkPreposition, classifyRelation, makeTableFrame, type BoxLike } from './preposition-check.js';
 import { spellFromIds } from './ai-schema.js';
 import { wordById } from './pack.js';
+import { HandLossTracker, sourceIsHand, HAND_GRACE_MS } from './hand-presence.js';
 
 const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); } }; };
 const packJson = (id: string) => ({ words: [{ id, word: id, ipa: '/t/', partOfSpeech: 'noun', plural: `${id}s`, article: 'a', cefr: 'A1', example: `The ${id} is here.`, helper: { es: 'x', vi: 'y' }, sceneLabel: id, wakeFx: 'bloom', rarity: 'common', audio: `audio/en-US/${id}.mp3` }] });
@@ -49,5 +50,17 @@ describe('bugfix guards', () => {
     const nearFront: BoxLike = { center: { x: 0, y: 0.82, z: -0.55 }, size: { x: 0.07, y: 0.09, z: 0.07 } };
     expect(classifyRelation(nearFront, tableBox, frame)).toBe('in-front-of');
     expect(spellFromIds(['article-foo', 'cup'], wordById)).toBeNull();
+  });
+  it('hand-loss tracker: grace period, immersive-only, back transition', () => {
+    const t = new HandLossTracker();
+    expect(sourceIsHand({ hand: {} })).toBe(true); expect(sourceIsHand({})).toBe(false); expect(sourceIsHand(undefined)).toBe(false);
+    expect(t.update(false, false, 0)).toBeNull(); // desktop/non-immersive: never lost
+    expect(t.update(false, true, 0)).toBeNull(); // missing, grace running
+    expect(t.update(false, true, HAND_GRACE_MS - 1)).toBeNull(); // flicker tolerated
+    expect(t.update(true, true, HAND_GRACE_MS)).toBeNull(); // back before grace: no event
+    expect(t.update(false, true, 2000)).toBeNull();
+    expect(t.update(false, true, 2000 + HAND_GRACE_MS)).toBe('lost');
+    expect(t.update(false, true, 99999)).toBeNull(); // no repeat
+    expect(t.update(true, true, 100000)).toBe('back');
   });
 });
