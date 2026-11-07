@@ -11,6 +11,7 @@
 
 import {
   BoxGeometry,
+  CanvasTexture,
   Color,
   createSystem,
   CylinderGeometry,
@@ -24,7 +25,9 @@ import {
   VisibilityState,
   XRMesh,
 } from '@iwsdk/core';
-import { WordTarget } from './word-component.js';
+import { SpellTile, WordTarget } from './word-component.js';
+import { emptySpell, isComplete, spellEffect, spellText, stretchTile, trySnap, type Spell, type Tile } from './spell.js';
+import { buildTiles, castSentence, homeOffset, slotOffset, TILE_COLORS, withinSnap, STRETCH_RATIO } from './spell-tiles.js';
 import { KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
 import { fadeAmount, gradeCard, newCard, type CardState } from './scheduler.js';
 import { load, save, toTableRelative, type SaveState } from './store.js';
@@ -67,6 +70,8 @@ export class WordSystem extends createSystem({
   targets: { required: [WordTarget] },
   pressedTargets: { required: [WordTarget, Pressed] },
   grabbedTargets: { required: [WordTarget, Grabbed] },
+  grabbedTiles: { required: [SpellTile, Grabbed] },
+  pressedTiles: { required: [SpellTile, Pressed] },
   sceneMeshes: { required: [XRMesh] },
 }) {
   private claimedLabels = new Set<string>();
@@ -81,6 +86,9 @@ export class WordSystem extends createSystem({
   private grabbedIds = new Set<string>();
   private pendingPlace: { wordId: string; object: Mesh; releasedAt: number; lastX: number; lastY: number; lastZ: number } | null = null;
   private tableObject: Mesh | null = null;
+  private tileRecs: { tile: Tile; object: Mesh; entity: { getValue: Function; setValue: Function; addComponent: Function; removeComponent: Function }; home: { x: number; y: number; z: number }; redraw: (t: string) => void; returning: boolean }[] = [];
+  private spell: Spell = emptySpell();
+  private stretchStart: number | null = null;
   private cards = new Map<string, CardState>();
   private persisted: SaveState | null = null;
   private tableOrigin: { x: number; y: number; z: number } | null = null;
@@ -154,6 +162,39 @@ export class WordSystem extends createSystem({
         const object = entity.object3D as Mesh | null;
         if (id && object) this.pendingPlace = { wordId: id, object, releasedAt: performance.now(), lastX: object.position.x, lastY: object.position.y, lastZ: object.position.z };
       } catch { /* placement optional */ }
+    });
+
+    // Spell tiles: grab shows word; release near next slot tries snap.
+    this.queries.grabbedTiles.subscribe('qualify', (entity) => {
+      const rec = this.tileRecs.find((r) => (r.entity as unknown) === entity);
+      if (!rec) return;
+      rec.returning = false;
+      this.stretchStart = null;
+      const entry = wordById(rec.tile.entryId);
+      this.caption(entry ? `${rec.tile.text} — ${entry.ipa}` : rec.tile.text);
+    });
+    this.queries.grabbedTiles.subscribe('disqualify', (entity) => {
+      try {
+        const rec = this.tileRecs.find((r) => (r.entity as unknown) === entity);
+        if (!rec || rec.entity.getValue(SpellTile, 'snapped')) return;
+        const slot = this.slotWorld(this.spell.tiles.length, this.spell.tiles.length + 1);
+        const d = Math.hypot(rec.object.position.x - slot.x, rec.object.position.y - slot.y, rec.object.position.z - slot.z);
+        if (!withinSnap(d)) { rec.returning = true; return; }
+        const r = trySnap(this.spell, rec.tile);
+        if (!r.ok) { this.caption(r.hint); playSfx('boing'); rec.returning = true; return; } // repel
+        this.spell = r.spell;
+        rec.entity.setValue(SpellTile, 'snapped', true);
+        rec.entity.removeComponent(OneHandGrabbable);
+        this.relayoutSpell();
+        playSfx('snap');
+        this.caption(isComplete(this.spell) ? `${spellText(this.spell)} — poke a tile to cast!` : spellText(this.spell));
+      } catch (error) { console.warn('[Word] tile snap failed', error); }
+    });
+    // Poke snapped tile with complete spell -> cast.
+    this.queries.pressedTiles.subscribe('qualify', (entity) => {
+      try {
+        if (entity.getValue(SpellTile, 'snapped') && isComplete(this.spell)) this.castSpell();
+      } catch (error) { console.warn('[Word] spell cast failed', error); }
     });
 
     this.queries.sceneMeshes.subscribe('qualify', (entity) => {
@@ -232,6 +273,91 @@ export class WordSystem extends createSystem({
       if (entry.id === 'cup') entity.addComponent(OneHandGrabbable); // placement quests: grab, place, settle-grade
       this.dioramaParts.push({ object: prop, offsetX: -0.4 + index * 0.2 });
     });
+    this.buildSpellTiles(table.position);
+  }
+
+  /** Sentence Spell tiles: colored boxes, word drawn on top face (canvas).
+   * Grab -> release near next slot -> trySnap; reject repels home. Poke a
+   * snapped tile with a complete spell to cast it at the named target. */
+  private buildSpellTiles(tablePos: { x: number; y: number; z: number }): void {
+    const tiles = buildTiles();
+    tiles.forEach((tile, index) => {
+      try {
+        const color = TILE_COLORS[tile.kind];
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 160;
+        const ctx = canvas.getContext('2d');
+        const tex = new CanvasTexture(canvas);
+        const redraw = (text: string) => {
+          if (!ctx) return;
+          ctx.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+          ctx.fillRect(0, 0, 256, 160);
+          ctx.fillStyle = '#2d2438';
+          ctx.font = 'bold 56px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(text, 128, 84, 236);
+          tex.needsUpdate = true;
+        };
+        redraw(tile.text);
+        const side = new MeshStandardMaterial({ color });
+        const top = new MeshStandardMaterial({ map: tex });
+        const object = new Mesh(new BoxGeometry(0.105, 0.02, 0.07), [side, side, top, side, side, side]);
+        const home = homeOffset(index, tiles.length);
+        object.position.set(tablePos.x + home.x, tablePos.y + home.y, tablePos.z + home.z);
+        const entity = this.world.createTransformEntity(object);
+        entity.addComponent(SpellTile);
+        entity.setValue(SpellTile, 'entryId', tile.entryId);
+        entity.setValue(SpellTile, 'kind', tile.kind);
+        entity.addComponent(RayInteractable);
+        entity.addComponent(OneHandGrabbable);
+        this.tileRecs.push({ tile, object, entity: entity as never, home: { ...object.position }, redraw, returning: false });
+        this.dioramaParts.push({ object, offsetX: home.x });
+      } catch (error) { console.warn('[Word] spell tile failed', tile.entryId, error); }
+    });
+  }
+
+  private caption(text: string): void {
+    try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: text })); } catch { /* no DOM */ }
+  }
+
+  private slotWorld(index: number, spellLength: number): { x: number; y: number; z: number } {
+    const t = this.tableObject?.position ?? { x: 0, y: 0.74, z: -1.15 };
+    const o = slotOffset(index, spellLength);
+    return { x: t.x + o.x, y: t.y + o.y, z: t.z + o.z };
+  }
+
+  private relayoutSpell(): void {
+    const snapped = this.tileRecs.filter((r) => r.entity.getValue(SpellTile, 'snapped'));
+    snapped.forEach((r, i) => { const p = this.slotWorld(i, snapped.length); r.object.position.set(p.x, p.y, p.z); });
+  }
+
+  /** Cast completed spell: wake named target, tiles fly home, spell resets. */
+  private castSpell(): void {
+    const effect = spellEffect(this.spell);
+    if (!effect || !isComplete(this.spell)) return;
+    this.caption(`✨ ${castSentence(spellText(this.spell))}`);
+    playSfx('wake');
+    for (const entity of this.queries.targets.entities) {
+      if ((entity.getValue(WordTarget, 'wordId') ?? '') !== effect.objectId) continue;
+      entity.setValue(WordTarget, 'state', 'awake');
+      entity.setValue(WordTarget, 'bloom', 1);
+      const prev = this.cards.get(effect.objectId) ?? newCard(effect.objectId, Date.now());
+      this.cards.set(effect.objectId, gradeCard(prev, 4, Date.now()));
+      this.persistProgress();
+    }
+    if (!this.persisted?.onboardingDone && this.onbStep === 'first-spell') {
+      this.onbStep = nextOnboarding(this.onbStep, spellText(this.spell) === 'open the door' ? 'spell:open-door' : 'spell:cast');
+      this.caption(onboardingCaption(this.onbStep));
+      if (this.onbStep === 'done' && this.persisted) { this.persisted.onboardingDone = true; this.persistProgress(); }
+    }
+    for (const r of this.tileRecs) {
+      if (!r.entity.getValue(SpellTile, 'snapped')) continue;
+      r.entity.setValue(SpellTile, 'snapped', false);
+      r.entity.addComponent(OneHandGrabbable);
+      r.returning = true;
+      if (r.tile.form === 'plural') { const fresh = buildTiles().find((t) => t.entryId === r.tile.entryId); if (fresh) { r.tile = fresh; r.redraw(fresh.text); } }
+    }
+    this.spell = emptySpell();
   }
 
   /** Real room: one target per known semantic label, marker at mesh center. */
@@ -255,6 +381,7 @@ export class WordSystem extends createSystem({
         );
       }
       console.info('[Word] diorama moved onto real table');
+      for (const r of this.tileRecs) r.home = { ...r.object.position };
     }
 
     const material = new MeshStandardMaterial({ color: HUSH.clone(), emissive: HUSH.clone().multiplyScalar(0.25) });
@@ -318,6 +445,31 @@ export class WordSystem extends createSystem({
       if (!report.ok) console.warn('[Word perf]', report.issues.join('; '));
       this.perfFrames = 0; this.perfLast = nowMs;
     }
+    // Tiles: fly home when returning; pinch-stretch plural while held.
+    for (const r of this.tileRecs) {
+      if (!r.returning) continue;
+      const p = r.object.position;
+      p.x += (r.home.x - p.x) * Math.min(1, delta * 10);
+      p.y += (r.home.y - p.y) * Math.min(1, delta * 10);
+      p.z += (r.home.z - p.z) * Math.min(1, delta * 10);
+      if (Math.hypot(r.home.x - p.x, r.home.y - p.y, r.home.z - p.z) < 0.005) r.returning = false;
+    }
+    try {
+      const grips = (this as unknown as { player?: { gripSpaces?: { left?: { position: { x: number; y: number; z: number } }; right?: { position: { x: number; y: number; z: number } } } } }).player?.gripSpaces;
+      if (grips?.left && grips?.right) {
+        const handDist = Math.hypot(grips.left.position.x - grips.right.position.x, grips.left.position.y - grips.right.position.y, grips.left.position.z - grips.right.position.z);
+        for (const entity of this.queries.grabbedTiles.entities) {
+          const rec = this.tileRecs.find((r) => (r.entity as unknown) === entity);
+          if (!rec || rec.tile.kind !== 'noun') continue;
+          if (this.stretchStart === null) { this.stretchStart = handDist; continue; }
+          if (handDist > this.stretchStart * STRETCH_RATIO) {
+            const s = stretchTile(rec.tile);
+            if (s.ok) { rec.tile = s.tile; rec.redraw(s.tile.text); this.caption(`${s.tile.text}!`); playSfx('whoosh'); }
+            this.stretchStart = handDist;
+          }
+        }
+      }
+    } catch { /* stretch optional */ }
     for (const entity of this.queries.targets.entities) {
       const object = entity.object3D as Mesh | null;
       if (!object || !(object.material instanceof MeshStandardMaterial)) continue;

@@ -13,3 +13,10 @@ export const WordTarget = createComponent('WordTarget', {
   state: { type: Types.String, default: 'sleeping' }, // sleeping | awake
   bloom: { type: Types.Float32, default: 0 }, // 1 at wake moment, decays to 0
 });
+
+/** A draggable Sentence Spell tile (see spell.ts / spell-tiles.ts). */
+export const SpellTile = createComponent('SpellTile', {
+  entryId: { type: Types.String, default: '' },
+  kind: { type: Types.String, default: '' },
+  snapped: { type: Types.Boolean, default: false },
+});
