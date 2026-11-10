@@ -24,8 +24,9 @@ import {
   SphereGeometry,
   VisibilityState,
   XRMesh,
+  InputComponent,
 } from '@iwsdk/core';
-import { SpellTile, WordTarget } from './word-component.js';
+import { SpellTile, WordTarget, MicOrb } from './word-component.js';
 import { emptySpell, isComplete, spellEffect, spellText, stretchTile, trySnap, type Spell, type Tile } from './spell.js';
 import { buildTiles, castSentence, homeOffset, orderBySnap, slotOffset, stretchArmed, TILE_COLORS, withinSnap, STRETCH_RATIO } from './spell-tiles.js';
 import { KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
@@ -39,36 +40,31 @@ import { nextOnboarding, onboardingCaption, type OnbStep } from './onboarding.js
 import { askEcho } from './echo.js';
 import { HandLossTracker, sourceIsHand } from './hand-presence.js';
 import { checkPreposition, makeTableFrame, SETTLE_MS, type BoxLike } from './preposition-check.js';
+import { ROOM_WORDS } from './pack.js';
+import { buildDeck, type Quest } from './deck.js';
+import { newRush, startRush, tickRush, hitRush, pauseRush, resumeRush, type RushState } from './hush-rush.js';
+import { aimAssist } from './aim-assist.js';
+import { browserRecorder, voiceWake } from './voice-wake.js';
+import { helperText, detectHelper, type HelperLang } from './helper.js';
+import { preloadClips, speakWord } from './word-audio-player.js';
 
 const HUSH = new Color(0x7a8794); // docs/art.md Hush fog
 const WAKE = new Color(0xffb43a); // docs/art.md Wake warm
 const AWAKE = new Color(0x57c98a); // docs/art.md Life green
 
-function speak(entry: WordEntry): void {
-  // Poke-to-hear: pre-generated clips ship later; chain per PLAN is
-  // clip -> speechSynthesis -> captions only.
-  const caption = `${entry.word} — ${entry.ipa}`;
+function speak(entry: WordEntry, helperLang: HelperLang = 'none', immersion = false): void {
+  // Chain: pre-generated clip -> speechSynthesis -> caption only (word-audio-player).
+  const helper = helperText(entry, helperLang, immersion);
+  const caption = helper ? `${entry.word} — ${entry.ipa} · ${helper}` : `${entry.word} — ${entry.ipa}`;
   console.info(`[Word caption] ${caption}`);
-  try {
-    globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: caption }));
-  } catch {
-    /* caption DOM unavailable */
-  }
-  try {
-    const synth = globalThis.speechSynthesis;
-    if (synth) {
-      const utterance = new SpeechSynthesisUtterance(entry.word);
-      utterance.lang = 'en-US';
-      synth.speak(utterance);
-    }
-  } catch (error) {
-    console.warn('[Word] speechSynthesis unavailable, captions only', error);
-  }
+  try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: caption })); } catch { /* no DOM */ }
+  void speakWord(entry);
 }
 
 export class WordSystem extends createSystem({
   targets: { required: [WordTarget] },
   pressedTargets: { required: [WordTarget, Pressed] },
+  pressedMic: { required: [MicOrb, Pressed] },
   grabbedTargets: { required: [WordTarget, Grabbed] },
   grabbedTiles: { required: [SpellTile, Grabbed] },
   pressedTiles: { required: [SpellTile, Pressed] },
@@ -95,6 +91,16 @@ export class WordSystem extends createSystem({
   private elapsed = 0;
   private dioramaParts: { object: Mesh; offsetX: number; isTable?: boolean; isTile?: boolean }[] = [];
   private dioramaOnRealTable = false;
+  private quest: Quest | null = null;
+  private rush: RushState | null = null;
+  private rushLastCaptionSec = -1;
+  private rushWasPaused = false;
+  private voiceBusy = false;
+  private consentPending = false;
+  private farTargets = new Map<string, { x: number; y: number; z: number }>();
+  private gazeId: string | null = null;
+  private prevTrigger = false;
+  private questAnnounced = false;
 
   init(): void {
     try {
@@ -112,7 +118,7 @@ export class WordSystem extends createSystem({
       try {
         const entry = wordById(entity.getValue(WordTarget, 'wordId') ?? '');
         if (!entry) return;
-        speak(entry);
+        speak(entry, this.helperLangNow(), this.immersionNow());
         playSfx('pop');
         const now0 = Date.now();
         const existing = this.cards.get(entry.id);
@@ -145,11 +151,22 @@ export class WordSystem extends createSystem({
             }).catch(() => { /* Echo optional */ });
           }
           console.info(`[Word] woke ${entry.word} (${entry.ipa})`);
+          if (this.rush?.phase === 'running') { this.rush = hitRush(this.rush, true); }
+          if (this.quest?.wordId === entry.id) this.refreshQuest(true);
         }
       } catch (error) {
         console.error('[Word] press handling failed', error);
       }
     });
+
+    this.queries.pressedMic.subscribe('qualify', () => { void this.handleMic(); });
+    window.addEventListener('word:mic', () => { void this.handleMic(); });
+    window.addEventListener('word:rush-start', () => this.startRushNow());
+    window.addEventListener('word:settings', () => {
+      try { const s = load(localStorage); if (s.a11y) this.a11y = { ...DEFAULT_A11Y, ...s.a11y, captionScale: (s.a11y.captionScale as A11y['captionScale']) || 1 }; this.persisted = s; } catch { /* ignore */ }
+    });
+    try { preloadClips([...ROOM_WORDS, ...KITCHEN_PROPS]); } catch { /* audio optional */ }
+    this.refreshQuest(false);
 
     this.queries.grabbedTargets.subscribe('qualify', (entity) => {
       const id = entity.getValue(WordTarget, 'wordId') ?? '';
@@ -227,6 +244,86 @@ export class WordSystem extends createSystem({
     );
   }
 
+  private helperLangNow(): HelperLang {
+    const raw = this.persisted?.helperLang;
+    return !raw || raw === 'auto' ? detectHelper(typeof navigator !== 'undefined' ? navigator.language : '') : (raw as HelperLang);
+  }
+  private immersionNow(): boolean { return !!this.persisted?.immersion; }
+
+  /** Deck: due reviews first, then new. Sets current quest + caption. */
+  private refreshQuest(announce: boolean): void {
+    try {
+      const present = [...new Set([...this.queries.targets.entities].map((e) => e.getValue(WordTarget, 'wordId') as string).filter(Boolean))];
+      const allIds = present.length ? present : [...ROOM_WORDS.map((w) => w.id), ...KITCHEN_PROPS.map((w) => w.id)];
+      const deck = buildDeck(this.cards, allIds, Date.now());
+      this.quest = deck[0] ?? null;
+      if (this.quest && (announce || !this.persisted?.onboardingDone)) {
+        const e = wordById(this.quest.wordId);
+        if (e) this.caption(this.quest.kind === 'review' ? `Again: wake the ${e.word}` : `Wake the ${e.word}`);
+      }
+      if (!this.quest && announce) this.caption('Your room is awake!');
+    } catch { this.quest = null; }
+  }
+
+  private startRushNow(): void {
+    try {
+      const best = this.persisted?.rushBest ?? 0;
+      this.rush = startRush(newRush(best));
+      this.rushLastCaptionSec = -1;
+      this.caption('Hush Rush! Wake words fast!');
+      playSfx('whoosh');
+    } catch { /* rush optional */ }
+  }
+
+  /** Voice wake: first use = in-world consent (press mic again), then 3s clip.
+   * Target = current deck quest word (due first). Any failure -> ray-pinch caption. */
+  private async handleMic(): Promise<void> {
+    if (this.voiceBusy) return;
+    try {
+      const state = load(localStorage);
+      if (!state.voiceConsent && !this.consentPending) {
+        this.consentPending = true;
+        this.caption('Voice? Press mic again to allow. Voice is transcribed, never saved.');
+        return;
+      }
+      if (!state.voiceConsent && this.consentPending) {
+        state.voiceConsent = true; save(localStorage, state); this.persisted = state; this.consentPending = false;
+        this.caption('Voice on. Say the word!');
+      }
+      const targetId = this.quest?.wordId ?? 'table';
+      const entry = wordById(targetId);
+      if (!entry) { this.caption('Poke a word first'); return; }
+      this.voiceBusy = true;
+      this.caption(`Say: ${entry.word}`);
+      const outcome = await voiceWake({ targetWord: entry.word, targetIpa: entry.ipa, recorder: browserRecorder() });
+      if (outcome.result === 'exact') {
+        this.caption(`Yes! ${entry.word}`);
+        this.wakeById(entry.id);
+      } else if (outcome.result === 'almost') {
+        this.caption(outcome.hint);
+      } else if (outcome.result === 'wrong') {
+        this.caption(`I heard "${outcome.heard}". Try: ${entry.word}`);
+      } else {
+        this.caption('Voice unavailable — use ray-pinch on the word');
+      }
+    } catch { this.caption('Voice unavailable — use ray-pinch on the word'); }
+    finally { this.voiceBusy = false; }
+  }
+
+  /** Wake a target by id (voice / gaze-pinch path): same grading as poke. */
+  private wakeById(id: string): void {
+    for (const entity of this.queries.targets.entities) {
+      if ((entity.getValue(WordTarget, 'wordId') ?? '') !== id) continue;
+      entity.setValue(WordTarget, 'state', 'awake');
+      entity.setValue(WordTarget, 'bloom', 1);
+      const prev = this.cards.get(id) ?? newCard(id, Date.now());
+      this.cards.set(id, gradeCard(prev, 4, Date.now()));
+      this.persistProgress(); playSfx('wake');
+      if (this.rush?.phase === 'running') this.rush = hitRush(this.rush, true);
+      if (this.quest?.wordId === id) this.refreshQuest(true);
+    }
+  }
+
   /** Persist cards + awake ids + table-relative positions; failure never crashes. */
   private persistProgress(): void {
     try {
@@ -275,6 +372,15 @@ export class WordSystem extends createSystem({
       this.dioramaParts.push({ object: prop, offsetX: -0.4 + index * 0.2 });
     });
     this.buildSpellTiles(table.position);
+    // Mic orb near table front edge: press to start voice wake (consent first use).
+    try {
+      const orb = new Mesh(new SphereGeometry(0.035, 20, 16), new MeshStandardMaterial({ color: 0x7c9eff, emissive: 0x3355aa }));
+      orb.position.set(table.position.x + 0.45, table.position.y + 0.09, table.position.z + 0.22);
+      const orbEntity = this.world.createTransformEntity(orb);
+      orbEntity.addComponent(MicOrb);
+      orbEntity.addComponent(RayInteractable);
+      this.dioramaParts.push({ object: orb, offsetX: 0.45 });
+    } catch { /* voice optional; ray-pinch remains */ }
   }
 
   /** Sentence Spell tiles: colored boxes, word drawn on top face (canvas).
@@ -398,12 +504,14 @@ export class WordSystem extends createSystem({
     target.setValue(WordTarget, 'wordId', entry.id);
     this.restoreAwake(target);
     target.addComponent(RayInteractable);
+    this.farTargets.set(entry.id, { x: origin.x, y: origin.y + 0.3, z: origin.z });
     if (this.persisted && this.tableOrigin) {
       this.persisted.tableRelative[entry.id] = toTableRelative(
         { x: origin.x, y: origin.y + 0.3, z: origin.z }, this.tableOrigin);
       this.persistProgress();
     }
     console.info(`[Word] room target claimed: ${label} -> ${entry.word}`);
+    this.refreshQuest(false);
   }
 
   update(delta: number): void {
@@ -415,7 +523,49 @@ export class WordSystem extends createSystem({
       if (ev === 'lost') { this.gate.add('hands-lost'); this.persistProgress(); try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: 'Show your hands ✋' })); } catch { /* no DOM */ } }
       if (ev === 'back') this.gate.remove('hands-lost');
     } catch { /* input unavailable: visibility/blur pause still active */ }
+    // Hush Rush frozen by PauseGate: sync pause/resume, never tick while paused.
+    if (this.rush) {
+      if (this.gate.paused && this.rush.phase === 'running') { this.rush = pauseRush(this.rush); this.rushWasPaused = true; }
+      else if (!this.gate.paused && this.rush.phase === 'paused' && this.rushWasPaused) { this.rush = resumeRush(this.rush); this.rushWasPaused = false; }
+    }
     if (this.gate.paused) return; // all timers frozen: Hush Rush, fade, bloom, onboarding
+    if (!this.questAnnounced) { this.questAnnounced = true; if (this.quest) { const e = wordById(this.quest.wordId); if (e) this.caption(`Wake the ${e.word}`); } }
+    // Hush Rush tick + in-world timer/score caption (sticky while running).
+    if (this.rush?.phase === 'running') {
+      this.rush = tickRush(this.rush, delta * 1000);
+      const sec = Math.ceil(this.rush.leftMs / 1000);
+      if (sec !== this.rushLastCaptionSec) {
+        this.rushLastCaptionSec = sec;
+        const questWord = this.quest ? wordById(this.quest.wordId)?.word ?? '' : '';
+        try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: { text: `Hush Rush ${sec}s · Score ${this.rush.score} · x${Math.max(1, this.rush.combo)}`, sub: questWord ? `Wake the ${questWord}` : '', sticky: true } })); } catch { /* no panel */ }
+      }
+      if (this.rush.phase === 'done') {
+        try { if (this.persisted) { this.persisted.rushBest = this.rush.best; this.persistProgress(); } } catch { /* ignore */ }
+        this.caption(`Time! Score ${this.rush.score} · Best ${this.rush.best}`);
+        playSfx('wake');
+      }
+    }
+    // Aim assist + head-gaze pinch for far real-room targets (within 15 deg).
+    try {
+      if (this.farTargets.size) {
+        const head = this.player.head; head.updateWorldMatrix(true, false);
+        const hp = { x: head.matrixWorld.elements[12], y: head.matrixWorld.elements[13], z: head.matrixWorld.elements[14] };
+        const e = head.matrixWorld.elements;
+        const fwd = { x: -e[8], y: -e[9], z: -e[10] };
+        const targets = [...this.farTargets.entries()].map(([id, position]) => ({ id, position }));
+        const assisted = aimAssist(hp, fwd, targets, 15);
+        this.gazeId = assisted?.id ?? null;
+        if (assisted) {
+          for (const entity of this.queries.targets.entities) {
+            if ((entity.getValue(WordTarget, 'wordId') ?? '') === assisted.id && entity.getValue(WordTarget, 'state') !== 'awake') entity.setValue(WordTarget, 'bloom', Math.max(entity.getValue(WordTarget, 'bloom') ?? 0, 0.35));
+          }
+        }
+        const pads = (this as unknown as { input?: { xr?: { gamepads?: { left?: { getButtonDown(b: unknown): boolean }; right?: { getButtonDown(b: unknown): boolean } } } } }).input?.xr?.gamepads;
+        const down = !!(pads?.left?.getButtonDown(InputComponent.Trigger) || pads?.right?.getButtonDown(InputComponent.Trigger));
+        if (down && !this.prevTrigger && this.gazeId) { const id = this.gazeId; const e2 = wordById(id); if (e2) speak(e2, this.helperLangNow(), this.immersionNow()); this.wakeById(id); }
+        this.prevTrigger = down;
+      }
+    } catch { /* gaze optional; ray-pinch remains */ }
     // Placement grading: released prop, settled SETTLE_MS without moving -> check vs real table.
     if (this.pendingPlace && this.tableObject) {
       const p = this.pendingPlace; const o = p.object;
@@ -448,6 +598,7 @@ export class WordSystem extends createSystem({
       const fps = Math.round((this.perfFrames * 1000) / (nowMs - this.perfLast));
       const tris = this.queries.targets.entities.size * 800; // low-poly props, upper bound per mesh
       const report = assessPerf({ fps, drawCalls: this.queries.targets.entities.size + 2 + this.tileRecs.length * 6, triangles: tris });
+      try { globalThis.dispatchEvent(new CustomEvent('word:perf', { detail: { fps, drawCalls: this.queries.targets.entities.size + 2 + this.tileRecs.length * 6, triangles: tris } })); } catch { /* dev panel optional */ }
       if (!report.ok) console.warn('[Word perf]', report.issues.join('; '));
       this.perfFrames = 0; this.perfLast = nowMs;
     }

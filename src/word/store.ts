@@ -18,6 +18,7 @@ export interface SaveState {
   a11y?: { highContrast: boolean; captionScale: number; reducedMotion: boolean; colorblindSafe: boolean };
   onboarding?: string;
   onboardingDone?: boolean;
+  voiceConsent?: boolean;
 }
 
 export interface StorageLike {

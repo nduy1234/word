@@ -33,6 +33,27 @@
       }
     },
     {
+      "id": "caption-panel",
+      "name": "Caption Panel",
+      "content": { "type": "asset", "asset": "caption-panel" },
+      "transform": { "position": [0, 1.32, -1.2], "scale": 0.27 },
+      "components": {}
+    },
+    {
+      "id": "dev-panel",
+      "name": "Dev Panel",
+      "content": { "type": "asset", "asset": "dev-panel" },
+      "transform": { "position": [0, 1.82, -1.2], "scale": 0.2 },
+      "components": {}
+    },
+    {
+      "id": "palm-panel",
+      "name": "Palm Menu Panel",
+      "content": { "type": "asset", "asset": "palm-panel" },
+      "transform": { "position": [0.25, 1.35, -0.6], "scale": 0.22 },
+      "components": { "RayInteractable": {} }
+    },
+    {
       "id": "key-light",
       "name": "Key Light",
       "transform": {

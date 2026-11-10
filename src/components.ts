@@ -6,7 +6,6 @@
  */
 
 import { defineComponents } from '@iwsdk/core';
-import { Robot } from './robot-component.js';
-import { WordTarget, SpellTile } from './word/word-component.js';
+import { WordTarget, SpellTile, MicOrb } from './word/word-component.js';
 
-export default defineComponents([Robot, WordTarget, SpellTile]);
+export default defineComponents([WordTarget, SpellTile, MicOrb]);

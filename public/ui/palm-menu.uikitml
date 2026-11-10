@@ -1,0 +1,23 @@
+<style>
+  .menu-root { flex-direction: column; width: 400px; }
+  .menu-content { flex-direction: column; gap: 6px; padding-top: 16px; padding-bottom: 8px; padding-left: 20px; padding-right: 20px; }
+  .menu-title { color: #1c1d20; font-size: 24px; font-weight: 700; }
+  .menu-title:dark { color: #fafaf7; }
+  .menu-status { color: #3a3b40; font-size: 18px; line-height: 1.25; }
+  .menu-status:dark { color: #dddfe3; }
+  .menu-button { justify-content: flex-start; margin-left: 20px; margin-right: 20px; margin-bottom: 8px; }
+</style>
+<Panel class="menu-root">
+  <div class="menu-content">
+    <div class="menu-title">Word Menu</div>
+    <div id="menu-status" class="menu-status">Palm menu</div>
+  </div>
+  <Button id="menu-contrast" class="menu-button"><ButtonLabel id="menu-contrast-label">High contrast: off</ButtonLabel></Button>
+  <Button id="menu-caption" class="menu-button"><ButtonLabel id="menu-caption-label">Caption size: normal</ButtonLabel></Button>
+  <Button id="menu-motion" class="menu-button"><ButtonLabel id="menu-motion-label">Reduced motion: off</ButtonLabel></Button>
+  <Button id="menu-helper" class="menu-button"><ButtonLabel id="menu-helper-label">Helper: off</ButtonLabel></Button>
+  <Button id="menu-immersion" class="menu-button"><ButtonLabel id="menu-immersion-label">Immersion: off</ButtonLabel></Button>
+  <Button id="menu-rush" class="menu-button"><ButtonLabel>Start Hush Rush</ButtonLabel></Button>
+  <Button id="menu-mic" class="menu-button"><ButtonLabel>Say the quest word</ButtonLabel></Button>
+  <Button id="menu-close" class="menu-button"><ButtonLabel>Close menu</ButtonLabel></Button>
+</Panel>

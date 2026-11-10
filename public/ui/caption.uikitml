@@ -1,0 +1,14 @@
+<style>
+  .caption-root { flex-direction: column; width: 480px; }
+  .caption-content { flex-direction: column; gap: 4px; padding-top: 18px; padding-bottom: 18px; padding-left: 22px; padding-right: 22px; align-items: center; }
+  .caption-text { color: #1c1d20; font-size: 26px; font-weight: 700; line-height: 1.25; text-align: center; }
+  .caption-text:dark { color: #fafaf7; }
+  .caption-sub { color: #3a3b40; font-size: 20px; line-height: 1.25; text-align: center; }
+  .caption-sub:dark { color: #dddfe3; }
+</style>
+<Panel class="caption-root">
+  <div id="caption-box" class="caption-content">
+    <div id="caption-text" class="caption-text">Word</div>
+    <div id="caption-sub" class="caption-sub"></div>
+  </div>
+</Panel>

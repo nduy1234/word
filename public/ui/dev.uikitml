@@ -1,0 +1,11 @@
+<style>
+  .dev-root { flex-direction: column; width: 340px; }
+  .dev-content { flex-direction: column; gap: 2px; padding-top: 12px; padding-bottom: 12px; padding-left: 16px; padding-right: 16px; align-items: center; }
+  .dev-text { color: #1c1d20; font-size: 20px; font-weight: 700; text-align: center; }
+  .dev-text:dark { color: #57c98a; }
+</style>
+<Panel class="dev-root">
+  <div class="dev-content">
+    <div id="dev-text" class="dev-text">-- fps</div>
+  </div>
+</Panel>

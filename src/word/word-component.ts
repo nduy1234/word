@@ -20,3 +20,6 @@ export const SpellTile = createComponent('SpellTile', {
   kind: { type: Types.String, default: '' },
   snapped: { type: Types.Boolean, default: false },
 });
+
+/** Mic orb for voice wake: press starts consent / 3s voice-wake flow. */
+export const MicOrb = createComponent('MicOrb', {});

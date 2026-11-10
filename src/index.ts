@@ -9,6 +9,8 @@ import { SessionMode, VisibilityState, World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
 import { PanelSystem } from './panel.js';
 import { FpsSystem } from './word/fps-system.js';
+import { CaptionSystem } from './word/caption-system.js';
+import { PalmMenuSystem } from './word/palm-menu-system.js';
 import { WordSystem } from './word/word-system.js';
 import { cycleHelper, detectHelper, type HelperLang } from './word/helper.js';
 import { load, save } from './word/store.js';
@@ -30,9 +32,11 @@ try {
   helperBtn?.addEventListener('click', () => {
     helper = cycleHelper(helper);
     const s = load(localStorage); s.helperLang = helper; save(localStorage, s); render();
+    try { window.dispatchEvent(new CustomEvent('word:settings')); } catch { /* ignore */ }
   });
   immersionBox?.addEventListener('change', () => {
     const s = load(localStorage); s.immersion = immersionBox.checked; save(localStorage, s);
+    try { window.dispatchEvent(new CustomEvent('word:settings')); } catch { /* ignore */ }
   });
   // Accessibility toggles (M4): high contrast, reduced motion, caption size — persisted.
   const contrastBox = document.getElementById('a11y-contrast') as HTMLInputElement | null;
@@ -44,8 +48,9 @@ try {
     if (motionBox) motionBox.checked = a11y.reducedMotion;
     if (captionBtn) captionBtn.textContent = `Caption size: ${a11y.captionScale === 1 ? 'normal' : a11y.captionScale === 1.25 ? 'large' : 'extra large'}`;
     const cap = document.getElementById('caption'); if (cap) cap.style.fontSize = `${captionPx(a11y)}px`;
-    document.body.style.filter = a11y.highContrast ? 'contrast(1.25)' : '';
+    // High contrast applies via palette() to scene materials (WordSystem/PalmMenu), not CSS filter.
     const s = load(localStorage); s.a11y = a11y; save(localStorage, s);
+    try { window.dispatchEvent(new CustomEvent('word:settings')); } catch { /* ignore */ }
   };
   applyA11y();
   contrastBox?.addEventListener('change', () => { a11y = { ...a11y, highContrast: contrastBox.checked }; applyA11y(); });
@@ -57,10 +62,12 @@ const launchError = document.getElementById('launch-error');
 const caption = document.getElementById('caption');
 let captionTimer: ReturnType<typeof setTimeout> | undefined;
 
-// Captions: WordSystem dispatches 'word:caption' on poke.
+let immersiveNow = false;
+// Captions: in-world CaptionSystem always listens. DOM #caption only non-immersive.
 window.addEventListener('word:caption', (event) => {
-  if (!caption) return;
-  caption.textContent = (event as CustomEvent<string>).detail;
+  if (!caption || immersiveNow) return;
+  const d = (event as CustomEvent<unknown>).detail;
+  caption.textContent = typeof d === 'string' ? d : ((d as { text?: string })?.text ?? '');
   caption.style.display = 'block';
   if (captionTimer) clearTimeout(captionTimer);
   captionTimer = setTimeout(() => {
@@ -74,6 +81,8 @@ World.create(
 )
   .then((world) => {
     world.registerSystem(WordSystem);
+    world.registerSystem(CaptionSystem);
+    world.registerSystem(PalmMenuSystem);
     world.registerSystem(PanelSystem);
     if (import.meta.env.DEV) {
       world.registerSystem(FpsSystem);
@@ -91,7 +100,8 @@ World.create(
         world.launchXR({ sessionMode: SessionMode.ImmersiveAR });
       } catch (error) {
         console.error('[Word] MR launch failed', error);
-        if (launchError) launchError.textContent = 'Mixed reality unavailable here — try "Play in VR instead".';
+        if (immersiveNow) { try { window.dispatchEvent(new CustomEvent('word:caption', { detail: 'Mixed reality unavailable here' })); } catch { /* ignore */ } }
+        else if (launchError) launchError.textContent = 'Mixed reality unavailable here — try "Play in VR instead".';
       }
     });
     playVr?.addEventListener('click', () => {
@@ -99,11 +109,14 @@ World.create(
         world.launchXR({ sessionMode: SessionMode.ImmersiveVR });
       } catch (error) {
         console.error('[Word] VR launch failed', error);
-        if (launchError) launchError.textContent = 'VR unavailable on this device/browser.';
+        if (immersiveNow) { try { window.dispatchEvent(new CustomEvent('word:caption', { detail: 'VR unavailable on this device' })); } catch { /* ignore */ } }
+        else if (launchError) launchError.textContent = 'VR unavailable on this device/browser.';
       }
     });
 
     world.visibilityState.subscribe((state) => {
+      immersiveNow = state !== VisibilityState.NonImmersive;
+      if (immersiveNow && caption) caption.style.display = 'none';
       if (launch) {
         launch.style.display = state === VisibilityState.NonImmersive ? 'flex' : 'none';
       }
