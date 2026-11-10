@@ -70,6 +70,21 @@ Code-side counts (this build, fallback diorama + claimed room targets):
 
 Over budget → fix order: reduce marker sphere segments, merge prop geometries, cut particles, then re-run A8.
 
+## P0 results (fill in on device / emulator)
+
+| # | Check | Result | Notes |
+|---|---|---|---|
+| P0-1a | In-world caption readable in XR (onboarding, word+IPA+helper, pause, Show your hands, spell/preposition hints) | | |
+| P0-1b | In-world dev panel shows fps / draw calls / triangles | | |
+| P0-2 | Palm-up menu opens, pinch selects, settings persist after restart | | |
+| P0-3 | Every word plays audio (clip if present, else speechSynthesis, else caption) | | |
+| P0-4a | Mic orb: consent first use only, 3s voice wake, fallback to ray-pinch | | |
+| P0-4b | Hush Rush from palm menu: timer/score in-world, frozen on pause/hand-loss | | |
+| P0-4c | Gaze-pinch with aim assist wakes far room target within 15 deg | | |
+| P0-5 | Network off: full game plays (poke/spells/quests/rush, scripted Echo) | | |
+| Perf | fps / draw calls / triangles this build (emulator estimate in code log `[Word perf]`) | | |
+
+
 ## G. Content / safety spot-check
 - English UI everywhere; IPA on tap; helper hints hidden in Immersion mode.
 - No brands/logos/identifiable people in art; ages 10+.
