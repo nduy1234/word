@@ -10,7 +10,7 @@ export class PauseGate {
 }
 /** Ghost shown when hands lost; timers (incl Hush Rush) freeze while paused. */
 export function pauseHint(reasons: PauseReason[]): string {
-  if (reasons.includes('hands-lost')) return 'Show your hands ✋';
-  if (reasons.includes('hidden') || reasons.includes('session-end')) return 'Paused — your room is saved';
+  if (reasons.includes('hands-lost')) return 'Show your hands';
+  if (reasons.includes('hidden') || reasons.includes('session-end')) return 'Paused - your room is saved';
   return 'Paused';
 }

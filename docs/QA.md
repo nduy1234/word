@@ -84,6 +84,18 @@ Over budget → fix order: reduce marker sphere segments, merge prop geometries,
 | P0-5 | Network off: full game plays (poke/spells/quests/rush, scripted Echo) | | |
 | Perf | fps / draw calls / triangles this build (emulator estimate in code log `[Word perf]`) | | |
 
+## P1 results (fill in on device / emulator)
+
+| # | Check | Result | Notes |
+|---|---|---|---|
+| P1-6 | Room labels claim, save, restart: table-relative anchors restore; move room setup >0.35m: "Room changed - labels re-placed" shows, no floating wrong labels | | |
+| P1-7 | Grab cup: prompt cycles on -> under -> next to -> in front of -> behind; settle 300ms grades vs real table, wrong placement gives hint only | | |
+| P1-8 | Echo orb on table corner; grows form 2 at 8 awake, form 3 at 20 awake, "Echo grew!" caption | | |
+| P1-9 | Fluency Mural on fallback wall fills green per awake word; on real wall mesh it pins to wall and faces you | | |
+| P1-10 | Palm menu > Atlas: awake/total, mastered count, per-district % (text Atlas v1) | | |
+| P1-11 | Wake 10/12 home + 4/5 kitchen: "The Cafe is open!" + 12 cafe props appear on table back row, questable | | |
+| Perf-P1 | fps / draw calls / triangles with cafe+echo+mural (estimate +14 calls, still <100) | | |
+
 
 ## G. Content / safety spot-check
 - English UI everywhere; IPA on tap; helper hints hidden in Immersion mode.

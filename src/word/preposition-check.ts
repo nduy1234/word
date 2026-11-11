@@ -140,17 +140,17 @@ export function checkPreposition(
   if (!expected) return { result: 'unsupported', relation: 'none', hint: `Echo cannot check "${expectedWord}" yet.` };
   const relation = classifyRelation(subject, target, frame);
   if (expected === 'in') {
-    return { result: 'unsupported', relation, hint: 'Echo cannot check "in" yet — try "on" or "under".' };
+    return { result: 'unsupported', relation, hint: 'Echo cannot check "in" yet - try "on" or "under".' };
   }
   if (opts.held || (opts.stillMs ?? 0) < SETTLE_MS) {
-    return { result: 'pending', relation, hint: 'Hold still…' };
+    return { result: 'pending', relation, hint: 'Hold still...' };
   }
   const name = opts.targetName ?? 'the table';
   if (relation === expected) {
     return { result: 'correct', relation, hint: `Yes! ${READABLE[expected]} ${name}.` };
   }
   if (classifyRelation(subject, target, frame, HYSTERESIS_M) === expected) {
-    return { result: 'almost', relation, hint: `Almost — a tiny bit more ${READABLE[expected]} ${name}.` };
+    return { result: 'almost', relation, hint: `Almost - a tiny bit more ${READABLE[expected]} ${name}.` };
   }
   return {
     result: 'wrong', relation,

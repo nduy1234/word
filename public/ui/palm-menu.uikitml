@@ -19,5 +19,6 @@
   <Button id="menu-immersion" class="menu-button"><ButtonLabel id="menu-immersion-label">Immersion: off</ButtonLabel></Button>
   <Button id="menu-rush" class="menu-button"><ButtonLabel>Start Hush Rush</ButtonLabel></Button>
   <Button id="menu-mic" class="menu-button"><ButtonLabel>Say the quest word</ButtonLabel></Button>
+  <Button id="menu-atlas" class="menu-button"><ButtonLabel id="menu-atlas-label">Atlas</ButtonLabel></Button>
   <Button id="menu-close" class="menu-button"><ButtonLabel>Close menu</ButtonLabel></Button>
 </Panel>

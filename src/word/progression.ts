@@ -1,11 +1,18 @@
 /** Progression: districts, streak+freezes, petals, cosmetics, Atlas, Mural. Pure. */
+import { CAFE_PROPS } from './pack.js';
 export interface District { id: string; name: string; wordIds: string[] }
 export const DISTRICTS: District[] = [
   { id: 'home', name: 'Home Room', wordIds: ['table', 'wall', 'floor', 'ceiling', 'door', 'window', 'couch', 'lamp', 'plant', 'screen', 'bed', 'shelf'] },
   { id: 'kitchen', name: 'Kitchen', wordIds: ['cup', 'plate', 'apple', 'chair', 'book'] },
-  { id: 'cafe', name: 'Café', wordIds: [] },
+  { id: 'cafe', name: 'Café', wordIds: CAFE_PROPS.map((w) => w.id) },
   { id: 'market', name: 'Market', wordIds: [] },
 ];
+/** Text Atlas summary (PLAN palm Atlas, text-only v1): per-district % + mastered. */
+export function atlasSummary(awake: Set<string>, mastered: Set<string>): { total: number; awakeCount: number; masteredCount: number; lines: string[] } {
+  const all = DISTRICTS.flatMap((d) => d.wordIds);
+  const lines = DISTRICTS.filter((d) => d.wordIds.length).map((d) => `${d.name.replace('Café', 'Cafe')} ${Math.round(districtProgress(d, awake) * 100)}%`);
+  return { total: all.length, awakeCount: all.filter((id) => awake.has(id)).length, masteredCount: all.filter((id) => mastered.has(id)).length, lines };
+}
 export function districtProgress(d: District, awake: Set<string>): number {
   return d.wordIds.length ? d.wordIds.filter((id) => awake.has(id)).length / d.wordIds.length : 0;
 }

@@ -2,14 +2,14 @@
 
 /** Confusable minimal pairs: [word, pair, hint]. Hearing pair for word = "almost". */
 export const MINIMAL_PAIRS: [string, string, string][] = [
-  ['ship', 'sheep', 'ship = short i · sheep = long ee'],
-  ['sheep', 'ship', 'sheep = long ee · ship = short i'],
-  ['light', 'right', 'light = L · right = R'],
-  ['right', 'light', 'right = R · light = L'],
-  ['cap', 'cup', 'cap = a · cup = uh'],
-  ['cup', 'cap', 'cup = uh · cap = a'],
-  ['bed', 'bad', 'bed = e · bad = a'],
-  ['bad', 'bed', 'bad = a · bed = e'],
+  ['ship', 'sheep', 'ship = short i | sheep = long ee'],
+  ['sheep', 'ship', 'sheep = long ee | ship = short i'],
+  ['light', 'right', 'light = L | right = R'],
+  ['right', 'light', 'right = R | light = L'],
+  ['cap', 'cup', 'cap = a | cup = uh'],
+  ['cup', 'cap', 'cup = uh | cap = a'],
+  ['bed', 'bad', 'bed = e | bad = a'],
+  ['bad', 'bed', 'bad = a | bed = e'],
   ['door', 'dog', 'door ends quiet · dog ends with g'],
   ['tree', 'three', 'three starts with th'],
   ['three', 'tree', 'three starts with th'],
@@ -42,12 +42,12 @@ export function stressIndex(ipa: string): number {
   return (clean.slice(0, mark).match(/[aeiouæɑɔɛɪʊə]+/g) ?? []).length;
 }
 
-/** Bouncing-dot stress hint, e.g. "TA-ble ●○" for tablet-like 2-syllable words. */
+/** Stress hint, e.g. "TA-ble BIG-small" for 2-syllable words (ASCII only: UIKit font). */
 export function stressHint(word: string, ipa: string, syllables: number): string {
   if (syllables < 2) return word;
   const idx = Math.min(stressIndex(ipa), syllables - 1);
-  const dots = Array.from({ length: syllables }, (_, i) => (i === idx ? '●' : '○')).join('');
-  return `${word} ${dots} — bounce on the big dot`;
+  const dots = Array.from({ length: syllables }, (_, i) => (i === idx ? 'BIG' : 'small')).join('-');
+  return `${word} ${dots} - bounce on the BIG beat`;
 }
 
 export function matchTranscript(transcript: string, targetWord: string, targetIpa = ''): MatchResult {

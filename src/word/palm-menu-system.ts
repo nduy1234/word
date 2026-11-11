@@ -16,7 +16,7 @@ interface PanelObj {
 }
 interface El { setProperties(p: Record<string, unknown>): void; addEventListener(t: string, f: () => void): void; removeEventListener(t: string, f: () => void): void }
 
-const BTNS = ['menu-contrast', 'menu-caption', 'menu-motion', 'menu-helper', 'menu-immersion', 'menu-rush', 'menu-mic', 'menu-close'] as const;
+const BTNS = ['menu-contrast', 'menu-caption', 'menu-motion', 'menu-helper', 'menu-immersion', 'menu-rush', 'menu-mic', 'menu-atlas', 'menu-close'] as const;
 
 export class PalmMenuSystem extends createSystem({}) {
   private panel: PanelObj | null = null;
@@ -26,6 +26,7 @@ export class PalmMenuSystem extends createSystem({}) {
   private immersion = false;
   private shownAt = 0;
   private lastPalmAt = 0;
+  private shownByPalm = false;
   private headPos = new Vector3();
   private handPos = new Vector3();
   private tmp = new Vector3();
@@ -45,6 +46,7 @@ export class PalmMenuSystem extends createSystem({}) {
         'menu-immersion': () => { this.immersion = !this.immersion; this.persist(); },
         'menu-rush': () => { try { globalThis.dispatchEvent(new CustomEvent('word:rush-start')); } catch { /* ignore */ } this.hide(); },
         'menu-mic': () => { try { globalThis.dispatchEvent(new CustomEvent('word:mic')); } catch { /* ignore */ } this.hide(); },
+        'menu-atlas': () => { try { globalThis.dispatchEvent(new CustomEvent('word:atlas')); } catch { /* ignore */ } this.hide(); },
         'menu-close': () => this.hide(),
       };
       for (const [id, fn] of Object.entries(handlers)) {
@@ -84,8 +86,8 @@ export class PalmMenuSystem extends createSystem({}) {
     set('menu-immersion', `Immersion: ${this.immersion ? 'on' : 'off'}`);
     try { this.panel?.getElementById('menu-status')?.setProperties({ text: `Helper ${this.helper} · Immersion ${this.immersion ? 'on' : 'off'} · Contrast ${this.a11y.highContrast ? 'on' : 'off'}` }); } catch { /* ignore */ }
   }
-  private toggle(): void { if (this.panel?.visible) this.hide(); else this.showAt(this.headPos); }
-  private hide(): void { if (this.panel) this.panel.visible = false; }
+  private toggle(): void { if (this.panel?.visible) this.hide(); else { this.shownByPalm = false; this.showAt(this.headPos); } }
+  private hide(): void { if (this.panel) this.panel.visible = false; this.shownByPalm = false; }
   private showAt(anchor: Vector3): void {
     if (!this.panel) return;
     this.panel.visible = true;
@@ -123,11 +125,9 @@ export class PalmMenuSystem extends createSystem({}) {
       }
       if (palmSeen) {
         this.lastPalmAt = now;
-        if (!this.panel.visible) this.showAt(this.handPos);
-      } else if (this.panel.visible && now - this.lastPalmAt > 1500 && now - this.shownAt > 1500) {
-        // Keep open briefly for pinch selection; hide after palm gone 1.5s and shown at least 1.5s.
-        // Only auto-hide if shown by palm (shownAt recent track): use lastPalmAt set on show via key too.
-        if (this.lastPalmAt > 0) this.hide();
+        if (!this.panel.visible) { this.shownByPalm = true; this.showAt(this.handPos); }
+      } else if (this.panel.visible && this.shownByPalm && now - this.lastPalmAt > 1500 && now - this.shownAt > 1500) {
+        this.hide(); // palm gone: close. Key/event-opened menu stays until Close or 20s cap.
       }
       void this.tmp;
     } catch { /* menu optional */ }

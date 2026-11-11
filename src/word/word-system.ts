@@ -29,9 +29,9 @@ import {
 import { SpellTile, WordTarget, MicOrb } from './word-component.js';
 import { emptySpell, isComplete, spellEffect, spellText, stretchTile, trySnap, type Spell, type Tile } from './spell.js';
 import { buildTiles, castSentence, homeOffset, orderBySnap, slotOffset, stretchArmed, TILE_COLORS, withinSnap, STRETCH_RATIO } from './spell-tiles.js';
-import { KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
+import { CAFE_PROPS, KITCHEN_PROPS, wordById, wordForSceneLabel, type WordEntry } from './pack.js';
 import { fadeAmount, gradeCard, newCard, type CardState } from './scheduler.js';
-import { load, save, toTableRelative, type SaveState } from './store.js';
+import { load, save, fromTableRelative, toTableRelative, type SaveState } from './store.js';
 import { playSfx } from './sound.js';
 import { PauseGate } from './pause.js';
 import { DEFAULT_A11Y, palette, type A11y } from './accessibility.js';
@@ -47,6 +47,11 @@ import { aimAssist } from './aim-assist.js';
 import { browserRecorder, voiceWake } from './voice-wake.js';
 import { helperText, detectHelper, type HelperLang } from './helper.js';
 import { preloadClips, speakWord } from './word-audio-player.js';
+import { atlasSummary, echoForm, muralPercent, unlockedDistricts } from './progression.js';
+import type { PrepositionId } from './preposition-check.js';
+
+const PREP_CYCLE: PrepositionId[] = ['on', 'under', 'next-to', 'in-front-of', 'behind'];
+const PREP_READABLE: Record<PrepositionId, string> = { on: 'on', under: 'under', 'next-to': 'next to', 'in-front-of': 'in front of', behind: 'behind' };
 
 const HUSH = new Color(0x7a8794); // docs/art.md Hush fog
 const WAKE = new Color(0xffb43a); // docs/art.md Wake warm
@@ -55,7 +60,7 @@ const AWAKE = new Color(0x57c98a); // docs/art.md Life green
 function speak(entry: WordEntry, helperLang: HelperLang = 'none', immersion = false): void {
   // Chain: pre-generated clip -> speechSynthesis -> caption only (word-audio-player).
   const helper = helperText(entry, helperLang, immersion);
-  const caption = helper ? `${entry.word} — ${entry.ipa} · ${helper}` : `${entry.word} — ${entry.ipa}`;
+  const caption = helper ? `${entry.word} - ${entry.ipa} | ${helper}` : `${entry.word} - ${entry.ipa}`;
   console.info(`[Word caption] ${caption}`);
   try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: caption })); } catch { /* no DOM */ }
   void speakWord(entry);
@@ -89,7 +94,7 @@ export class WordSystem extends createSystem({
   private persisted: SaveState | null = null;
   private tableOrigin: { x: number; y: number; z: number } | null = null;
   private elapsed = 0;
-  private dioramaParts: { object: Mesh; offsetX: number; isTable?: boolean; isTile?: boolean }[] = [];
+  private dioramaParts: { object: Mesh; offsetX: number; isTable?: boolean; isTile?: boolean; isCafe?: boolean }[] = [];
   private dioramaOnRealTable = false;
   private quest: Quest | null = null;
   private rush: RushState | null = null;
@@ -101,6 +106,16 @@ export class WordSystem extends createSystem({
   private gazeId: string | null = null;
   private prevTrigger = false;
   private questAnnounced = false;
+  private cafeRecs: { object: Mesh; offsetX: number }[] = [];
+  private cafeUnlocked = false;
+  private echoMesh: Mesh | null = null;
+  private echoLevel = 0;
+  private mural: Mesh | null = null;
+  private muralRedraw: ((awakeCount: number, total: number, pct: number) => void) | null = null;
+  private lastMuralPct = -1;
+  private muralOnWall = false;
+  private driftNoted = false;
+  private prepIndex = 0;
 
   init(): void {
     try {
@@ -161,16 +176,25 @@ export class WordSystem extends createSystem({
 
     this.queries.pressedMic.subscribe('qualify', () => { void this.handleMic(); });
     window.addEventListener('word:mic', () => { void this.handleMic(); });
+    window.addEventListener('word:atlas', () => {
+      try {
+        const awake = new Set(this.cards.keys());
+        const mastered = new Set([...this.cards.values()].filter((c) => c.reps >= 3).map((c) => c.wordId));
+        const s = atlasSummary(awake, mastered);
+        try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: { text: `Atlas: ${s.awakeCount}/${s.total} awake, ${s.masteredCount} mastered`, sub: s.lines.join(' | '), sticky: true } })); } catch { /* no panel */ }
+      } catch { /* atlas optional */ }
+    });
     window.addEventListener('word:rush-start', () => this.startRushNow());
     window.addEventListener('word:settings', () => {
       try { const s = load(localStorage); if (s.a11y) this.a11y = { ...DEFAULT_A11Y, ...s.a11y, captionScale: (s.a11y.captionScale as A11y['captionScale']) || 1 }; this.persisted = s; } catch { /* ignore */ }
     });
-    try { preloadClips([...ROOM_WORDS, ...KITCHEN_PROPS]); } catch { /* audio optional */ }
+    try { preloadClips([...ROOM_WORDS, ...KITCHEN_PROPS, ...CAFE_PROPS]); } catch { /* audio optional */ }
     this.refreshQuest(false);
 
     this.queries.grabbedTargets.subscribe('qualify', (entity) => {
       const id = entity.getValue(WordTarget, 'wordId') ?? '';
       if (id) { this.grabbedIds.add(id); if (this.pendingPlace?.wordId === id) this.pendingPlace = null; }
+      if (id === 'cup') this.caption(`Put the cup ${PREP_READABLE[PREP_CYCLE[this.prepIndex]]} the table`);
     });
     this.queries.grabbedTargets.subscribe('disqualify', (entity) => {
       try {
@@ -188,7 +212,7 @@ export class WordSystem extends createSystem({
       rec.returning = false;
       this.stretchStart = null;
       const entry = wordById(rec.tile.entryId);
-      this.caption(entry ? `${rec.tile.text} — ${entry.ipa}` : rec.tile.text);
+      this.caption(entry ? `${rec.tile.text} - ${entry.ipa}` : rec.tile.text);
     });
     this.queries.grabbedTiles.subscribe('disqualify', (entity) => {
       try {
@@ -205,7 +229,7 @@ export class WordSystem extends createSystem({
         rec.entity.removeComponent(OneHandGrabbable);
         this.relayoutSpell();
         playSfx('snap');
-        this.caption(isComplete(this.spell) ? `${spellText(this.spell)} — poke a tile to cast!` : spellText(this.spell));
+        this.caption(isComplete(this.spell) ? `${spellText(this.spell)} - poke a tile to cast!` : spellText(this.spell));
       } catch (error) { console.warn('[Word] tile snap failed', error); }
     });
     // Poke snapped tile with complete spell -> cast.
@@ -253,7 +277,9 @@ export class WordSystem extends createSystem({
   /** Deck: due reviews first, then new. Sets current quest + caption. */
   private refreshQuest(announce: boolean): void {
     try {
-      const present = [...new Set([...this.queries.targets.entities].map((e) => e.getValue(WordTarget, 'wordId') as string).filter(Boolean))];
+      const cafeIds = new Set(CAFE_PROPS.map((w) => w.id));
+      const present = [...new Set([...this.queries.targets.entities].map((e) => e.getValue(WordTarget, 'wordId') as string).filter(Boolean))]
+        .filter((id) => this.cafeUnlocked || !cafeIds.has(id)); // locked Cafe words are not questable yet
       const allIds = present.length ? present : [...ROOM_WORDS.map((w) => w.id), ...KITCHEN_PROPS.map((w) => w.id)];
       const deck = buildDeck(this.cards, allIds, Date.now());
       this.quest = deck[0] ?? null;
@@ -304,16 +330,21 @@ export class WordSystem extends createSystem({
       } else if (outcome.result === 'wrong') {
         this.caption(`I heard "${outcome.heard}". Try: ${entry.word}`);
       } else {
-        this.caption('Voice unavailable — use ray-pinch on the word');
+        this.caption('Voice unavailable - use ray-pinch on the word');
       }
-    } catch { this.caption('Voice unavailable — use ray-pinch on the word'); }
+    } catch { this.caption('Voice unavailable - use ray-pinch on the word'); }
     finally { this.voiceBusy = false; }
   }
 
-  /** Wake a target by id (voice / gaze-pinch path): same grading as poke. */
+  /** Wake a target by id (voice / gaze-pinch path): same grading guard as poke.
+   * Already-awake, not-due words never re-grade (no SRS/rush farming). */
   private wakeById(id: string): void {
     for (const entity of this.queries.targets.entities) {
       if ((entity.getValue(WordTarget, 'wordId') ?? '') !== id) continue;
+      const state = entity.getValue(WordTarget, 'state');
+      const card = this.cards.get(id);
+      const reviewable = state === 'awake' && card && card.dueAt <= Date.now();
+      if (state !== 'sleeping' && !reviewable) continue;
       entity.setValue(WordTarget, 'state', 'awake');
       entity.setValue(WordTarget, 'bloom', 1);
       const prev = this.cards.get(id) ?? newCard(id, Date.now());
@@ -372,6 +403,9 @@ export class WordSystem extends createSystem({
       this.dioramaParts.push({ object: prop, offsetX: -0.4 + index * 0.2 });
     });
     this.buildSpellTiles(table.position);
+    this.buildCafeProps(table.position);
+    this.buildEcho(table.position);
+    this.buildMural();
     // Mic orb near table front edge: press to start voice wake (consent first use).
     try {
       const orb = new Mesh(new SphereGeometry(0.035, 20, 16), new MeshStandardMaterial({ color: 0x7c9eff, emissive: 0x3355aa }));
@@ -381,6 +415,124 @@ export class WordSystem extends createSystem({
       orbEntity.addComponent(RayInteractable);
       this.dioramaParts.push({ object: orb, offsetX: 0.45 });
     } catch { /* voice optional; ray-pinch remains */ }
+  }
+
+  /** Cafe district props: hidden until Kitchen >=80% awake unlocks them
+   * (progression.unlockedDistricts). Shown on the table back row. */
+  private buildCafeProps(tablePos: { x: number; y: number; z: number }): void {
+    try {
+      this.cafeUnlocked = unlockedDistricts(new Set(this.persisted?.awake ?? [])).includes('cafe');
+      const geos = [new SphereGeometry(0.032, 16, 12), new BoxGeometry(0.07, 0.05, 0.07), new CylinderGeometry(0.03, 0.03, 0.07, 16)];
+      CAFE_PROPS.forEach((entry, index) => {
+        try {
+          const prop = new Mesh(geos[index % geos.length], new MeshStandardMaterial({ color: HUSH.clone() }));
+          const offsetX = -0.5 + index * 0.09;
+          prop.position.set(tablePos.x + offsetX, this.cafeUnlocked ? tablePos.y + 0.08 : -5, tablePos.z - 0.18);
+          prop.visible = this.cafeUnlocked;
+          const entity = this.world.createTransformEntity(prop);
+          entity.addComponent(WordTarget);
+          entity.setValue(WordTarget, 'wordId', entry.id);
+          this.restoreAwake(entity);
+          entity.addComponent(RayInteractable);
+          this.cafeRecs.push({ object: prop, offsetX });
+          this.dioramaParts.push({ object: prop, offsetX, isCafe: true });
+        } catch { /* one prop fails: rest of Cafe still builds */ }
+      });
+    } catch { /* Cafe optional; Kitchen loop intact */ }
+  }
+
+  /** Echo body: small glowing orb perched on the table corner. Form 1-3 grows
+   * with Atlas awake count (progression.echoForm). No AI needed for the body. */
+  private buildEcho(tablePos: { x: number; y: number; z: number }): void {
+    try {
+      const orb = new Mesh(new SphereGeometry(1, 20, 16), new MeshStandardMaterial({ color: 0x7c9eff, emissive: 0x3355aa }));
+      orb.scale.setScalar(0.032);
+      orb.position.set(tablePos.x + 0.52, tablePos.y + 0.12, tablePos.z - 0.2);
+      this.world.createTransformEntity(orb);
+      this.echoMesh = orb;
+      this.dioramaParts.push({ object: orb, offsetX: 0.52 });
+    } catch { /* Echo body optional */ }
+  }
+
+  /** Fluency Mural: canvas plane. Fallback wall in front; moves to the real
+   * wall when scene mesh claims it, filling as words wake (muralPercent). */
+  private buildMural(): void {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512; canvas.height = 288;
+      const ctx = canvas.getContext('2d');
+      const tex = new CanvasTexture(canvas);
+      this.muralRedraw = (awakeCount, total, pct) => {
+        if (!ctx) return;
+        ctx.fillStyle = '#3a4550'; ctx.fillRect(0, 0, 512, 288);
+        const cols = 10, cell = 44, x0 = 36, y0 = 30;
+        for (let i = 0; i < total; i++) {
+          ctx.fillStyle = i < awakeCount ? '#57c98a' : '#7a8794';
+          ctx.fillRect(x0 + (i % cols) * cell, y0 + Math.floor(i / cols) * cell, cell - 6, cell - 6);
+        }
+        ctx.fillStyle = '#fff4e0'; ctx.font = 'bold 34px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(`Room ${pct}% awake`, 256, 248);
+        tex.needsUpdate = true;
+      };
+      const plane = new Mesh(new BoxGeometry(0.95, 0.53, 0.02), new MeshStandardMaterial({ map: tex }));
+      plane.position.set(0, 1.55, -2.35);
+      this.world.createTransformEntity(plane);
+      this.mural = plane;
+      this.muralRedraw(0, 29, 0);
+    } catch { /* mural optional */ }
+  }
+
+  private checkCafeUnlock(): void {
+    if (this.cafeUnlocked || !this.cafeRecs.length) return;
+    if (!unlockedDistricts(new Set(this.cards.keys())).includes('cafe')) return;
+    this.cafeUnlocked = true;
+    const ty = (this.tableObject?.position.y ?? 0.74) + 0.08;
+    for (const rec of this.cafeRecs) { rec.object.visible = true; rec.object.position.y = ty; }
+    this.caption('The Cafe is open! New words on the table');
+    playSfx('whoosh');
+    this.refreshQuest(false);
+  }
+
+  private updateEchoForm(): void {
+    if (!this.echoMesh) return;
+    const form = echoForm(this.cards.size);
+    if (form === this.echoLevel) return;
+    const grew = this.echoLevel > 0 && form > this.echoLevel;
+    this.echoLevel = form;
+    this.echoMesh.scale.setScalar([0.032, 0.045, 0.06][form - 1]);
+    const mat = this.echoMesh.material as MeshStandardMaterial;
+    mat.color.setHex([0x7c9eff, 0x57c98a, 0xffb43a][form - 1]);
+    mat.emissive.setHex([0x3355aa, 0x1d6b41, 0x8a5a00][form - 1]);
+    if (grew) { this.caption('Echo grew!'); playSfx('whoosh'); }
+  }
+
+  private updateMural(): void {
+    if (!this.mural || !this.muralRedraw) return;
+    const awake = new Set(this.cards.keys());
+    const pct = muralPercent(awake);
+    if (pct === this.lastMuralPct) return;
+    this.lastMuralPct = pct;
+    const total = 12 + 5 + CAFE_PROPS.length;
+    this.muralRedraw(awake.size, total, pct);
+    if (this.muralOnWall) {
+      try {
+        const head = this.player.head; head.updateWorldMatrix(true, false);
+        this.mural.lookAt(head.matrixWorld.elements[12], this.mural.position.y, head.matrixWorld.elements[14]);
+      } catch { /* keep last facing */ }
+    }
+  }
+
+  /** Anchor drift: saved table-relative spot disagrees with fresh scene mesh
+   * by >0.35m: room changed, labels re-place from mesh (never float wrong). */
+  private checkDrift(id: string, pos: { x: number; y: number; z: number }): void {
+    if (this.driftNoted || !this.tableOrigin || !this.persisted) return;
+    const rel = this.persisted.tableRelative[id];
+    if (!rel) return;
+    const exp = fromTableRelative(rel, this.tableOrigin);
+    if (Math.hypot(exp.x - pos.x, exp.y - pos.y, exp.z - pos.z) > 0.35) {
+      this.driftNoted = true;
+      this.caption('Room changed - labels re-placed');
+    }
   }
 
   /** Sentence Spell tiles: colored boxes, word drawn on top face (canvas).
@@ -460,7 +612,7 @@ export class WordSystem extends createSystem({
       if (this.onbStep === 'done' && this.persisted) { this.persisted.onboardingDone = true; this.persistProgress(); }
     }
     // One caption only: cast line, plus next-step hint when onboarding advances.
-    this.caption(advanced && this.onbStep !== 'done' ? `✨ ${sentence} Next: ${onboardingCaption(this.onbStep)}` : `✨ ${sentence}`);
+    this.caption(advanced && this.onbStep !== 'done' ? `${sentence} Next: ${onboardingCaption(this.onbStep)}` : sentence);
     for (const r of this.tileRecs) {
       if (!r.entity.getValue(SpellTile, 'snapped')) continue;
       r.snapSeq = -1;
@@ -489,8 +641,16 @@ export class WordSystem extends createSystem({
         part.object.position.set(
           origin.x + part.offsetX,
           part.isTable ? origin.y + 0.03 : origin.y + 0.11,
-          origin.z + (part.isTile ? 0.26 : 0), // tiles keep front-edge tray row, clear of spell slots
+          origin.z + (part.isTile ? 0.26 : part.isCafe ? -0.18 : 0), // tiles keep front-edge tray row, clear of spell slots
         );
+      }
+      // Backfill table-relative anchors for targets claimed before the table.
+      if (this.persisted) {
+        for (const [fid, fpos] of this.farTargets) {
+          if (!this.persisted.tableRelative[fid]) this.persisted.tableRelative[fid] = toTableRelative(fpos, this.tableOrigin);
+          this.checkDrift(fid, fpos);
+        }
+        this.persistProgress();
       }
       console.info('[Word] diorama moved onto real table');
       for (const r of this.tileRecs) r.home = { ...r.object.position };
@@ -505,6 +665,11 @@ export class WordSystem extends createSystem({
     this.restoreAwake(target);
     target.addComponent(RayInteractable);
     this.farTargets.set(entry.id, { x: origin.x, y: origin.y + 0.3, z: origin.z });
+    this.checkDrift(entry.id, { x: origin.x, y: origin.y + 0.3, z: origin.z });
+    if (entry.id === 'wall' && this.mural) { // Fluency Mural pins to real wall
+      this.muralOnWall = true;
+      this.mural.position.set(origin.x, Math.max(1.25, origin.y), origin.z);
+    }
     if (this.persisted && this.tableOrigin) {
       this.persisted.tableRelative[entry.id] = toTableRelative(
         { x: origin.x, y: origin.y + 0.3, z: origin.z }, this.tableOrigin);
@@ -520,7 +685,7 @@ export class WordSystem extends createSystem({
       const xr = (this.world as unknown as { input?: { xr?: { getPrimaryInputSource(s: 'left' | 'right'): { hand?: unknown } | undefined } } }).input?.xr;
       const present = sourceIsHand(xr?.getPrimaryInputSource('left')) || sourceIsHand(xr?.getPrimaryInputSource('right'));
       const ev = this.handTracker.update(present, this.immersive, performance.now());
-      if (ev === 'lost') { this.gate.add('hands-lost'); this.persistProgress(); try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: 'Show your hands ✋' })); } catch { /* no DOM */ } }
+      if (ev === 'lost') { this.gate.add('hands-lost'); this.persistProgress(); try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: 'Show your hands' })); } catch { /* no DOM */ } }
       if (ev === 'back') this.gate.remove('hands-lost');
     } catch { /* input unavailable: visibility/blur pause still active */ }
     // Hush Rush frozen by PauseGate: sync pause/resume, never tick while paused.
@@ -529,6 +694,9 @@ export class WordSystem extends createSystem({
       else if (!this.gate.paused && this.rush.phase === 'paused' && this.rushWasPaused) { this.rush = resumeRush(this.rush); this.rushWasPaused = false; }
     }
     if (this.gate.paused) return; // all timers frozen: Hush Rush, fade, bloom, onboarding
+    this.checkCafeUnlock();
+    this.updateEchoForm();
+    this.updateMural();
     if (!this.questAnnounced) { this.questAnnounced = true; if (this.quest) { const e = wordById(this.quest.wordId); if (e) this.caption(`Wake the ${e.word}`); } }
     // Hush Rush tick + in-world timer/score caption (sticky while running).
     if (this.rush?.phase === 'running') {
@@ -579,8 +747,16 @@ export class WordSystem extends createSystem({
           const frame = makeTableFrame({ x: t.x, y: t.y, z: t.z }, cam ?? { x: t.x, y: 1.6, z: t.z + 1.15 });
           const subject: BoxLike = { center: { x: o.position.x, y: o.position.y, z: o.position.z }, size: { x: 0.07, y: 0.09, z: 0.07 } };
           const tableBox: BoxLike = { center: { x: t.x, y: t.y, z: t.z }, size: { x: 1.1, y: 0.05, z: 0.7 } };
-          const r = checkPreposition('on', subject, tableBox, frame, { stillMs: SETTLE_MS, targetName: 'the table' });
-          try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: r.hint })); } catch { /* no DOM */ }
+          const prep = PREP_CYCLE[this.prepIndex];
+          const r = checkPreposition(prep, subject, tableBox, frame, { stillMs: SETTLE_MS, targetName: 'the table' });
+          if (r.result === 'correct') {
+            this.wakeById(p.wordId);
+            this.prepIndex = (this.prepIndex + 1) % PREP_CYCLE.length;
+            const next = PREP_CYCLE[this.prepIndex];
+            try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: `${r.hint} Next: put the cup ${PREP_READABLE[next]} the table` })); } catch { /* no DOM */ }
+          } else {
+            try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: r.hint })); } catch { /* no DOM */ }
+          }
           playSfx(r.result === 'correct' ? 'snap' : r.result === 'almost' ? 'click' : 'boing');
           if (r.result === 'correct' && !this.persisted?.onboardingDone) {
             this.onbStep = nextOnboarding(this.onbStep, 'place:cup-on-table');

@@ -50,22 +50,22 @@ export class CaptionSystem extends createSystem({}) {
       const text = typeof detail === 'string' ? detail : detail.text;
       const sub = typeof detail === 'string' ? '' : (detail.sub ?? '');
       this.sticky = typeof detail !== 'string' && !!detail.sticky;
-      // Split "word — /ipa/" into main + sub when sub not given, for readability.
+      // Split "word - /ipa/ ..." into main + sub when sub not given, for readability.
       let main = text, rest = sub;
-      if (!rest && text.includes(' — ')) { const i = text.indexOf(' — '); main = text.slice(0, i); rest = text.slice(i + 3); }
+      if (!rest) { const m = text.match(/^(.+?) (?:—|-) (\/.*)$/); if (m) { main = m[1]; rest = m[2]; } }
       const pal = palette(this.a11y);
       this.textEl.setProperties({ text: main, fontSize: captionPx(this.a11y), color: this.a11y.highContrast ? pal.ink : undefined });
       this.subEl?.setProperties({ text: rest, display: rest ? 'flex' : 'none' });
       if (this.a11y.highContrast) this.boxEl?.setProperties({ backgroundColor: pal.bg });
       this.panel.visible = true;
-      this.hideAt = performance.now() + 3500;
+      this.hideAt = performance.now() + (this.sticky ? 12_000 : 3500); // sticky = longer read (rush re-sends each second)
     } catch { /* panel optional */ }
   }
 
   update(): void {
     if (!this.panel) return;
     try {
-      if (this.panel.visible && !this.sticky && performance.now() > this.hideAt) { this.panel.visible = false; return; }
+      if (this.panel.visible && performance.now() > this.hideAt) { this.panel.visible = false; this.sticky = false; return; }
       if (!this.panel.visible) return;
       const head = this.player.head;
       head.updateWorldMatrix(true, false);

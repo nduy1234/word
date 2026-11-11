@@ -95,23 +95,21 @@ World.create(
     // Spatial-data permission is requested by the XR session itself on entry.
     // Denial/failure lands back here (NonImmersive) with the fallback intact:
     // the virtual tabletop diorama is always built by WordSystem.
+    const launchFail = (ar: boolean) => (error: unknown) => {
+      console.error(`[Word] ${ar ? 'MR' : 'VR'} launch failed`, error);
+      if (immersiveNow) { try { window.dispatchEvent(new CustomEvent('word:caption', { detail: ar ? 'Mixed reality unavailable here' : 'VR unavailable on this device' })); } catch { /* ignore */ } }
+      else if (launchError) launchError.textContent = ar ? 'Mixed reality unavailable here — try "Play in VR instead".' : 'VR unavailable on this device/browser.';
+    };
     enterRoom?.addEventListener('click', () => {
       try {
-        world.launchXR({ sessionMode: SessionMode.ImmersiveAR });
-      } catch (error) {
-        console.error('[Word] MR launch failed', error);
-        if (immersiveNow) { try { window.dispatchEvent(new CustomEvent('word:caption', { detail: 'Mixed reality unavailable here' })); } catch { /* ignore */ } }
-        else if (launchError) launchError.textContent = 'Mixed reality unavailable here — try "Play in VR instead".';
-      }
+        // launchXR may reject async (permission denied): catch both paths.
+        void Promise.resolve(world.launchXR({ sessionMode: SessionMode.ImmersiveAR })).catch(launchFail(true));
+      } catch (error) { launchFail(true)(error); }
     });
     playVr?.addEventListener('click', () => {
       try {
-        world.launchXR({ sessionMode: SessionMode.ImmersiveVR });
-      } catch (error) {
-        console.error('[Word] VR launch failed', error);
-        if (immersiveNow) { try { window.dispatchEvent(new CustomEvent('word:caption', { detail: 'VR unavailable on this device' })); } catch { /* ignore */ } }
-        else if (launchError) launchError.textContent = 'VR unavailable on this device/browser.';
-      }
+        void Promise.resolve(world.launchXR({ sessionMode: SessionMode.ImmersiveVR })).catch(launchFail(false));
+      } catch (error) { launchFail(false)(error); }
     });
 
     world.visibilityState.subscribe((state) => {

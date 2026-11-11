@@ -57,7 +57,7 @@ describe('word matching', () => {
   it('close typo almost, unrelated wrong; stress dots', () => {
     expect(matchTranscript('tabel', 'table').result).toBe('almost');
     expect(matchTranscript('banana', 'table').result).toBe('wrong');
-    expect(stressHint('table', '/ˈteɪbəl/', 2)).toContain('●○');
+    expect(stressHint('table', '/ˈteɪbəl/', 2)).toContain('BIG-small');
   });
 });
 

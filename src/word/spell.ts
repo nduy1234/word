@@ -87,7 +87,7 @@ function reject(reason: SnapReject, hint: string): SnapResult {
 function checkNounSnap(np: NounPhrase, noun: Tile): SnapResult | null {
   if (np.article && np.article.text !== 'the' && noun.form !== 'plural'
     && noun.article && noun.article !== np.article.text) {
-    return reject('article-mismatch', `Say "${noun.article} ${noun.text}" — try the other little word.`);
+    return reject('article-mismatch', `Say "${noun.article} ${noun.text}" - try the other little word.`);
   }
   if (np.article && np.article.text !== 'the' && noun.form === 'plural') {
     return reject('plural-after-article', `"${np.article.text} ${noun.text}"? Drop the little word for many.`);
@@ -141,11 +141,11 @@ export function trySnap(spell: Spell, tile: Tile): SnapResult {
         if (!p.verb) return reject('needs-verb-first', 'Add an action word first, like "put".');
         return { ok: true, spell: { tiles: [...spell.tiles, tile] } };
       }
-      return reject('spell-full', 'That spell is ready — flick it!');
+      return reject('spell-full', 'That spell is ready - flick it!');
     case 'done':
-      return reject('spell-full', 'That spell is ready — flick it!');
+      return reject('spell-full', 'That spell is ready - flick it!');
   }
-  return reject('spell-full', 'That spell is ready — flick it!');
+  return reject('spell-full', 'That spell is ready - flick it!');
 }
 
 /** Pinch-stretch: pluralize a noun tile from stored plural. Prop multiplies in XR. */

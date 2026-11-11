@@ -23,8 +23,9 @@ describe('bugfix guards', () => {
   it('empty district never blocks unlock chain', () => {
     expect(unlockedDistricts(new Set())).toEqual(['home']); // kitchen still locked by home
     const awake = new Set(['table', 'wall', 'floor', 'ceiling', 'door', 'window', 'couch', 'lamp', 'plant', 'screen', 'cup', 'plate', 'apple', 'chair']);
-    // home 10/12 >=80% -> kitchen; kitchen 4/5 >=80% -> cafe; cafe empty -> market pass-through
-    expect(unlockedDistricts(awake)).toContain('market');
+    // home 10/12 >=80% -> kitchen; kitchen 4/5 >=80% -> cafe (now a real district, blocks market until 80%)
+    expect(unlockedDistricts(awake)).toContain('cafe');
+    expect(unlockedDistricts(awake)).not.toContain('market');
   });
   it('room-pack offline cache is per-label-set', async () => {
     const s = mem();

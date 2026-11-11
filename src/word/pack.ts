@@ -44,6 +44,21 @@ export const KITCHEN_PROPS: WordEntry[] = [
   { id: 'book', word: 'book', ipa: '/bʊk/', partOfSpeech: 'noun', plural: 'books', article: 'a', cefr: 'A1', example: 'The book is new.', helper: { es: 'el libro', vi: 'quyển sách' }, propId: 'book', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/book.mp3' },
 ];
 
+export const CAFE_PROPS: WordEntry[] = [
+  { id: 'milk', word: 'milk', ipa: '/mɪlk/', partOfSpeech: 'noun', plural: 'milks', cefr: 'A1', example: 'The milk is cold.', helper: { es: 'la leche', vi: 'sữa' }, propId: 'milk', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/milk.mp3' },
+  { id: 'tea', word: 'tea', ipa: '/tiː/', partOfSpeech: 'noun', plural: 'teas', cefr: 'A1', example: 'The tea is hot.', helper: { es: 'el té', vi: 'trà' }, propId: 'tea', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/tea.mp3' },
+  { id: 'cake', word: 'cake', ipa: '/keɪk/', partOfSpeech: 'noun', plural: 'cakes', article: 'a', cefr: 'A1', example: 'The cake is sweet.', helper: { es: 'el pastel', vi: 'bánh' }, propId: 'cake', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/cake.mp3' },
+  { id: 'bread', word: 'bread', ipa: '/bred/', partOfSpeech: 'noun', plural: 'breads', cefr: 'A1', example: 'The bread is new.', helper: { es: 'el pan', vi: 'bánh mì' }, propId: 'bread', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/bread.mp3' },
+  { id: 'egg', word: 'egg', ipa: '/eɡ/', partOfSpeech: 'noun', plural: 'eggs', article: 'an', cefr: 'A1', example: 'The egg is small.', helper: { es: 'el huevo', vi: 'trứng' }, propId: 'egg', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/egg.mp3' },
+  { id: 'cheese', word: 'cheese', ipa: '/tʃiːz/', partOfSpeech: 'noun', plural: 'cheeses', cefr: 'A1', example: 'The cheese is good.', helper: { es: 'el queso', vi: 'phô mai' }, propId: 'cheese', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/cheese.mp3' },
+  { id: 'juice', word: 'juice', ipa: '/dʒuːs/', partOfSpeech: 'noun', plural: 'juices', cefr: 'A1', example: 'The juice is cold.', helper: { es: 'el jugo', vi: 'nước ép' }, propId: 'juice', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/juice.mp3' },
+  { id: 'water', word: 'water', ipa: '/ˈwɔːtər/', partOfSpeech: 'noun', plural: 'waters', cefr: 'A1', example: 'The water is cold.', helper: { es: 'el agua', vi: 'nước' }, propId: 'water', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/water.mp3' },
+  { id: 'spoon', word: 'spoon', ipa: '/spuːn/', partOfSpeech: 'noun', plural: 'spoons', article: 'a', cefr: 'A1', example: 'The spoon is small.', helper: { es: 'la cuchara', vi: 'thìa' }, propId: 'spoon', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/spoon.mp3' },
+  { id: 'fork', word: 'fork', ipa: '/fɔːrk/', partOfSpeech: 'noun', plural: 'forks', article: 'a', cefr: 'A1', example: 'The fork is new.', helper: { es: 'el tenedor', vi: 'nĩa' }, propId: 'fork', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/fork.mp3' },
+  { id: 'sugar', word: 'sugar', ipa: '/ˈʃʊɡər/', partOfSpeech: 'noun', plural: 'sugars', cefr: 'A1', example: 'The sugar is sweet.', helper: { es: 'el azúcar', vi: 'đường' }, propId: 'sugar', wakeFx: 'bloom', rarity: 'common', audio: 'audio/en-US/sugar.mp3' },
+  { id: 'menu', word: 'menu', ipa: '/ˈmenjuː/', partOfSpeech: 'noun', plural: 'menus', article: 'a', cefr: 'A2', example: 'The menu is new.', helper: { es: 'el menú', vi: 'thực đơn' }, propId: 'menu', wakeFx: 'bloom', rarity: 'rare', audio: 'audio/en-US/menu.mp3' },
+];
+
 export const VERBS: WordEntry[] = [
   { id: 'open', word: 'open', ipa: '/ˈoʊpən/', partOfSpeech: 'verb', cefr: 'A1', example: 'Open the door.', helper: { es: 'abre', vi: 'mở' }, wakeFx: 'spell', rarity: 'common', audio: 'audio/en-US/open.mp3' },
   { id: 'close', word: 'close', ipa: '/kloʊz/', partOfSpeech: 'verb', cefr: 'A1', example: 'Close the window.', helper: { es: 'cierra', vi: 'đóng' }, wakeFx: 'spell', rarity: 'common', audio: 'audio/en-US/close.mp3' },
@@ -86,7 +101,7 @@ export const ADJECTIVES: WordEntry[] = [
 
 const BY_SCENE_LABEL = new Map(ROOM_WORDS.filter((w) => w.sceneLabel).map((w) => [w.sceneLabel as string, w]));
 const BY_ID = new Map(
-  [...ROOM_WORDS, ...KITCHEN_PROPS, ...VERBS, ...PHRASAL_VERBS, ...PREPOSITIONS, ...ADJECTIVES].map((w) => [w.id, w]),
+  [...ROOM_WORDS, ...KITCHEN_PROPS, ...CAFE_PROPS, ...VERBS, ...PHRASAL_VERBS, ...PREPOSITIONS, ...ADJECTIVES].map((w) => [w.id, w]),
 );
 
 /** Word for a detected scene label; undefined for unknown labels (skip those). */

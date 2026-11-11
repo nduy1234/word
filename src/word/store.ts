@@ -42,7 +42,12 @@ export function load(storage: StorageLike): SaveState {
     if (!raw) return emptySave();
     const p = JSON.parse(raw) as SaveState;
     if (p.version !== 1 || !Array.isArray(p.cards)) return emptySave();
-    return { ...emptySave(), ...p };
+    // Sanitize: a corrupt/hand-edited save must never poison runtime math.
+    const cards = p.cards.filter((c) => c && typeof c.wordId === 'string' && Number.isFinite(c.dueAt) && Number.isFinite(c.ease))
+      .map((c) => ({ ...c, reps: Math.max(0, Math.floor(c.reps) || 0), lapses: Math.max(0, Math.floor(c.lapses) || 0), intervalDays: Math.max(0, c.intervalDays || 0), ease: Math.max(1.3, c.ease) }));
+    const awake = Array.isArray(p.awake) ? p.awake.filter((x): x is string => typeof x === 'string') : [];
+    const tableRelative = p.tableRelative && typeof p.tableRelative === 'object' && !Array.isArray(p.tableRelative) ? p.tableRelative : {};
+    return { ...emptySave(), ...p, cards, awake, tableRelative };
   } catch { return emptySave(); }
 }
 
