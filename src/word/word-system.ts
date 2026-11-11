@@ -129,6 +129,11 @@ export class WordSystem extends createSystem({
   private prevRayPos: { x: number; y: number; z: number } | null = null;
   private prevRayAt = 0;
   private handSpeedNow = 0;
+  // Scratch colors: material loop runs per target per frame — never allocate there.
+  private colAwake = new Color();
+  private colHush = new Color();
+  private colWake = new Color();
+  private colBase = new Color();
 
   init(): void {
     try {
@@ -896,6 +901,8 @@ export class WordSystem extends createSystem({
         }
       }
     } catch { /* stretch optional */ }
+    const pal = palette(this.a11y);
+    this.colAwake.setHex(pal.awake); this.colHush.setHex(pal.hush); this.colWake.setHex(pal.wake);
     for (const entity of this.queries.targets.entities) {
       const object = entity.object3D as Mesh | null;
       if (!object || !(object.material instanceof MeshStandardMaterial)) continue;
@@ -906,14 +913,13 @@ export class WordSystem extends createSystem({
         bloom = Math.max(0, bloom - delta * 1.4);
         entity.setValue(WordTarget, 'bloom', bloom);
       }
-      const pal = palette(this.a11y);
-      const base = awake ? new Color(pal.awake) : new Color(pal.hush);
+      const base = this.colBase.copy(awake ? this.colAwake : this.colHush);
       if (awake) {
         // Fade-as-review: due cards desaturate awake objects back toward Hush.
         const card = this.cards.get(entity.getValue(WordTarget, 'wordId') ?? '');
         if (card) base.lerp(HUSH, fadeAmount(card, Date.now()));
       }
-      material.color.copy(base).lerp(new Color(pal.wake), bloom);
+      material.color.copy(base).lerp(this.colWake, bloom);
       const pulse = this.a11y.reducedMotion ? 1 : awake ? 1 + bloom * 0.6 : 1 + Math.sin(this.elapsed * 2) * 0.04;
       object.scale.setScalar(pulse);
     }
