@@ -45,7 +45,7 @@ export class FpsSystem extends createSystem({}) {
           const r = assessPerf(this.latest);
           this.panel.visible = true;
           this.textEl.setProperties({
-            text: `${fps} fps · ${this.latest.drawCalls} calls · ${Math.round(this.latest.triangles / 1000)}k tris${r.ok ? '' : ' OVER'}`,
+            text: `${fps} fps | ${this.latest.drawCalls} calls | ${Math.round(this.latest.triangles / 1000)}k tris${r.ok ? '' : ' OVER'}`,
             color: r.ok ? '#57c98a' : '#ff7a59',
           });
         } catch { /* dev only */ }

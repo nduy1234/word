@@ -3,7 +3,7 @@ import { validateEchoResponse, spellFromIds, type EchoResponse } from './ai-sche
 import { wordById } from './pack.js';
 
 export const SCRIPTED_ECHO: EchoResponse[] = [
-  { line: 'Hello! Look — the window is sleeping. Say its name!', newWordId: 'window', spell: ['open', 'article-the', 'window'] },
+  { line: 'Hello! Look - the window is sleeping. Say its name!', newWordId: 'window', spell: ['open', 'article-the', 'window'] },
   { line: 'Great job! The cup wants to wake up too.', newWordId: 'cup', spell: ['article-a', 'cup'] },
   { line: 'Wow! Put the cup on the table. You can do it!', newWordId: null, spell: ['put', 'article-the', 'cup', 'on', 'article-the', 'table'] },
 ];

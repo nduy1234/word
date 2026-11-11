@@ -60,7 +60,7 @@
 </style>
 <Panel class="panel-root">
   <div class="panel-content">
-    <div class="eyebrow">WORD — TODAY'S QUEST</div>
+    <div class="eyebrow">WORD - TODAY'S QUEST</div>
     <div class="heading">Wake your room</div>
     <div class="body">Poke a gray prop on the table to hear its word.</div>
     <div class="body">Wake the table first.</div>

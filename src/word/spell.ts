@@ -102,7 +102,7 @@ function snapIntoNP(spell: Spell, parsed: Parsed, np: NounPhrase, tile: Tile): S
     return { ok: true, spell: { tiles: [...spell.tiles, tile] } };
   }
   if (tile.kind === 'adjective') {
-    if (np.adjective) return reject('one-adjective', 'One describing word at A1–A2.');
+    if (np.adjective) return reject('one-adjective', 'One describing word at A1-A2.');
     return { ok: true, spell: { tiles: [...spell.tiles, tile] } };
   }
   if (tile.kind === 'noun') {

@@ -46,7 +46,11 @@ export function load(storage: StorageLike): SaveState {
     const cards = p.cards.filter((c) => c && typeof c.wordId === 'string' && Number.isFinite(c.dueAt) && Number.isFinite(c.ease))
       .map((c) => ({ ...c, reps: Math.max(0, Math.floor(c.reps) || 0), lapses: Math.max(0, Math.floor(c.lapses) || 0), intervalDays: Math.max(0, c.intervalDays || 0), ease: Math.max(1.3, c.ease) }));
     const awake = Array.isArray(p.awake) ? p.awake.filter((x): x is string => typeof x === 'string') : [];
-    const tableRelative = p.tableRelative && typeof p.tableRelative === 'object' && !Array.isArray(p.tableRelative) ? p.tableRelative : {};
+    const rawTable = p.tableRelative && typeof p.tableRelative === 'object' && !Array.isArray(p.tableRelative) ? p.tableRelative : {};
+    const tableRelative: Record<string, Vec3Like> = {};
+    for (const [k, v] of Object.entries(rawTable)) { // drop corrupt offsets: NaN positions must never restore
+      if (v && Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z)) tableRelative[k] = { x: v.x, y: v.y, z: v.z };
+    }
     return { ...emptySave(), ...p, cards, awake, tableRelative };
   } catch { return emptySave(); }
 }

@@ -84,7 +84,7 @@ export class PalmMenuSystem extends createSystem({}) {
     set('menu-motion', `Reduced motion: ${this.a11y.reducedMotion ? 'on' : 'off'}`);
     set('menu-helper', `Helper: ${this.helper === 'es' ? 'Espanol' : this.helper === 'vi' ? 'Tieng Viet' : 'off'}`);
     set('menu-immersion', `Immersion: ${this.immersion ? 'on' : 'off'}`);
-    try { this.panel?.getElementById('menu-status')?.setProperties({ text: `Helper ${this.helper} · Immersion ${this.immersion ? 'on' : 'off'} · Contrast ${this.a11y.highContrast ? 'on' : 'off'}` }); } catch { /* ignore */ }
+    try { this.panel?.getElementById('menu-status')?.setProperties({ text: `Helper ${this.helper} | Immersion ${this.immersion ? 'on' : 'off'} | Contrast ${this.a11y.highContrast ? 'on' : 'off'}` }); } catch { /* ignore */ }
   }
   private toggle(): void { if (this.panel?.visible) this.hide(); else { this.shownByPalm = false; this.showAt(this.headPos); } }
   private hide(): void { if (this.panel) this.panel.visible = false; this.shownByPalm = false; }

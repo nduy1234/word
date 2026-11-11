@@ -28,15 +28,16 @@ export async function voiceWake(opts: {
   if (!recorder) return { result: 'fallback', reason: 'no-recorder' };
   const fetcher: Fetcher = opts.fetcher ?? ((url, init) => fetch(url, init));
   let clip: Blob;
+  let recordTimer: ReturnType<typeof setTimeout> | undefined;
   try {
     // Recorder must not hang forever: race its fixed-length record against a cap.
     clip = await Promise.race([
       recorder.record(3000),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('record-timeout')), 6000)),
+      new Promise<never>((_, reject) => { recordTimer = setTimeout(() => reject(new Error('record-timeout')), 6000); }),
     ]);
   } catch {
     return { result: 'fallback', reason: 'mic-denied' };
-  }
+  } finally { if (recordTimer) clearTimeout(recordTimer); }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? TRANSCRIBE_TIMEOUT_MS);
   try {

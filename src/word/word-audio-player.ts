@@ -4,7 +4,7 @@ import { clipUrl } from './word-audio.js';
 import type { WordEntry } from './pack.js';
 
 const cache = new Map<string, HTMLAudioElement>();
-let failed = new Set<string>();
+const failed = new Set<string>();
 
 export function preloadClips(entries: WordEntry[]): void {
   for (const e of entries) {

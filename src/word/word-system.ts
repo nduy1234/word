@@ -327,7 +327,8 @@ export class WordSystem extends createSystem({
       }
       if (!state.voiceConsent && this.consentPending) {
         state.voiceConsent = true; save(localStorage, state); this.persisted = state; this.consentPending = false;
-        this.caption('Voice on. Say the word!');
+        this.caption('Voice on. Press mic and say the word!');
+        return; // next mic press records; consent caption must be seen first
       }
       const targetId = this.quest?.wordId ?? 'table';
       const entry = wordById(targetId);
@@ -670,14 +671,9 @@ export class WordSystem extends createSystem({
     if (!effect || !isComplete(this.spell)) return;
     const sentence = castSentence(spellText(this.spell));
     playSfx('wake');
-    for (const entity of this.queries.targets.entities) {
-      if ((entity.getValue(WordTarget, 'wordId') ?? '') !== effect.objectId) continue;
-      entity.setValue(WordTarget, 'state', 'awake');
-      entity.setValue(WordTarget, 'bloom', 1);
-      const prev = this.cards.get(effect.objectId) ?? newCard(effect.objectId, Date.now());
-      this.cards.set(effect.objectId, gradeCard(prev, 4, Date.now()));
-      this.persistProgress();
-    }
+    // Grading goes through wakeById: already-awake, not-due words never
+    // re-grade (no SRS/rush farming via repeated casts), quest/rush update.
+    this.wakeById(effect.objectId);
     let advanced = false;
     if (!this.persisted?.onboardingDone && this.onbStep === 'first-spell') {
       const before = this.onbStep;
@@ -783,11 +779,11 @@ export class WordSystem extends createSystem({
       if (sec !== this.rushLastCaptionSec) {
         this.rushLastCaptionSec = sec;
         const questWord = this.quest ? wordById(this.quest.wordId)?.word ?? '' : '';
-        try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: { text: `Hush Rush ${sec}s · Score ${this.rush.score} · x${Math.max(1, this.rush.combo)}`, sub: questWord ? `Wake the ${questWord}` : '', sticky: true } })); } catch { /* no panel */ }
+        try { globalThis.dispatchEvent(new CustomEvent('word:caption', { detail: { text: `Hush Rush ${sec}s | Score ${this.rush.score} | x${Math.max(1, this.rush.combo)}`, sub: questWord ? `Wake the ${questWord}` : '', sticky: true } })); } catch { /* no panel */ }
       }
       if (this.rush.phase === 'done') {
         try { if (this.persisted) { this.persisted.rushBest = this.rush.best; this.persistProgress(); } } catch { /* ignore */ }
-        this.caption(`Time! Score ${this.rush.score} · Best ${this.rush.best}`);
+        this.caption(`Time! Score ${this.rush.score} | Best ${this.rush.best}`);
         playSfx('wake');
       }
     }

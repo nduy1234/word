@@ -104,9 +104,10 @@ const BY_ID = new Map(
   [...ROOM_WORDS, ...KITCHEN_PROPS, ...CAFE_PROPS, ...VERBS, ...PHRASAL_VERBS, ...PREPOSITIONS, ...ADJECTIVES].map((w) => [w.id, w]),
 );
 
-/** Word for a detected scene label; undefined for unknown labels (skip those). */
+/** Word for a detected scene label; undefined for unknown labels (skip those).
+ * Lookup is case-insensitive: runtimes do not guarantee label casing. */
 export function wordForSceneLabel(label: string): WordEntry | undefined {
-  return BY_SCENE_LABEL.get(label);
+  return BY_SCENE_LABEL.get(label.toLowerCase());
 }
 
 export function wordById(id: string): WordEntry | undefined {

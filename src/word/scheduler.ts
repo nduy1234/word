@@ -24,7 +24,7 @@ export function gradeCard(card: CardState, grade: number, now: number): CardStat
     return { wordId: card.wordId, reps, ease, intervalDays, dueAt: now + 10 * 60_000, lapses };
   }
   reps += 1;
-  intervalDays = reps === 1 ? 1 : reps === 2 ? 6 : Math.round(intervalDays * ease);
+  intervalDays = reps === 1 ? 1 : reps === 2 ? 6 : Math.max(1, Math.round(intervalDays * ease)); // floor: corrupt 0-interval card must not stay due forever
   return { wordId: card.wordId, reps, ease, intervalDays, dueAt: now + intervalDays * 86_400_000, lapses };
 }
 

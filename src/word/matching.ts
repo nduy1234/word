@@ -10,7 +10,7 @@ export const MINIMAL_PAIRS: [string, string, string][] = [
   ['cup', 'cap', 'cup = uh | cap = a'],
   ['bed', 'bad', 'bed = e | bad = a'],
   ['bad', 'bed', 'bad = a | bed = e'],
-  ['door', 'dog', 'door ends quiet · dog ends with g'],
+  ['door', 'dog', 'door ends quiet | dog ends with g'],
   ['tree', 'three', 'three starts with th'],
   ['three', 'tree', 'three starts with th'],
 ];
