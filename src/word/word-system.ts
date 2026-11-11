@@ -48,6 +48,8 @@ import { browserRecorder, voiceWake } from './voice-wake.js';
 import { helperText, detectHelper, type HelperLang } from './helper.js';
 import { preloadClips, speakWord } from './word-audio-player.js';
 import { atlasSummary, echoForm, muralPercent, unlockedDistricts } from './progression.js';
+import { FLICK_FLIGHT_MS, handSpeedMs, isFlick, spritePoint } from './flick.js';
+import { fetchRoomPack, preferPackQuest } from './room-pack-client.js';
 import type { PrepositionId } from './preposition-check.js';
 
 const PREP_CYCLE: PrepositionId[] = ['on', 'under', 'next-to', 'in-front-of', 'behind'];
@@ -116,6 +118,17 @@ export class WordSystem extends createSystem({
   private muralOnWall = false;
   private driftNoted = false;
   private prepIndex = 0;
+  private rawLabels = new Set<string>();
+  private packLabelsKey = '';
+  private packBusy = false;
+  private lastClaimMs = 0;
+  private packWordIds: string[] = [];
+  private flickMesh: Mesh | null = null;
+  private flickState: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number }; wordId: string; t: number } | null = null;
+  private flickLatch = false;
+  private prevRayPos: { x: number; y: number; z: number } | null = null;
+  private prevRayAt = 0;
+  private handSpeedNow = 0;
 
   init(): void {
     try {
@@ -282,7 +295,7 @@ export class WordSystem extends createSystem({
         .filter((id) => this.cafeUnlocked || !cafeIds.has(id)); // locked Cafe words are not questable yet
       const allIds = present.length ? present : [...ROOM_WORDS.map((w) => w.id), ...KITCHEN_PROPS.map((w) => w.id)];
       const deck = buildDeck(this.cards, allIds, Date.now());
-      this.quest = deck[0] ?? null;
+      this.quest = preferPackQuest(deck, this.packWordIds) ?? deck[0] ?? null;
       if (this.quest && (announce || !this.persisted?.onboardingDone)) {
         const e = wordById(this.quest.wordId);
         if (e) this.caption(this.quest.kind === 'review' ? `Again: wake the ${e.word}` : `Wake the ${e.word}`);
@@ -336,6 +349,56 @@ export class WordSystem extends createSystem({
     finally { this.voiceBusy = false; }
   }
 
+  /** Flick: throw a Word Sprite from the hand toward the aim-assisted far
+   * target; it wakes on arrival. No far target: wake directly (near path). */
+  private launchFlick(id: string): void {
+    const to = this.farTargets.get(id);
+    if (!to || !this.flickMesh) { this.wakeById(id); return; }
+    try {
+      const head = this.player.head; head.updateWorldMatrix(true, false);
+      const e = head.matrixWorld.elements;
+      const from = { x: e[12] - e[8] * 0.35, y: e[13] - e[9] * 0.35 - 0.1, z: e[14] - e[10] * 0.35 };
+      this.flickState = { from, to: { ...to }, wordId: id, t: 0 };
+      this.flickMesh.visible = true;
+      this.flickMesh.position.set(from.x, from.y, from.z);
+      playSfx('whoosh');
+    } catch { this.wakeById(id); }
+  }
+
+  /** Room-aware curriculum: after labels settle (1.5s), send label NAMES only
+   * to /api/room-pack. AI -> cache -> seed fallback inside fetchRoomPack; the
+   * returned pack only reorders quests toward words present in this room. */
+  private maybeFetchRoomPack(): void {
+    if (this.packBusy || !this.rawLabels.size) return;
+    const key = [...this.rawLabels].sort().join(',');
+    if (key === this.packLabelsKey || performance.now() - this.lastClaimMs < 1500) return;
+    this.packLabelsKey = key;
+    this.packBusy = true;
+    void fetchRoomPack([...this.rawLabels], localStorage)
+      .then((r) => {
+        this.packWordIds = r.words.map((w) => w.id).filter((id) => wordById(id));
+        console.info(`[Word] room pack source=${r.source} words=${this.packWordIds.length}`);
+        if (r.source !== 'seed' && this.packWordIds.length) this.caption('Echo made a pack for your room');
+        this.refreshQuest(false);
+      })
+      .catch(() => { /* seed quests already active */ })
+      .finally(() => { this.packBusy = false; });
+  }
+
+  private updateFlick(delta: number): void {
+    if (!this.flickState || !this.flickMesh) return;
+    const f = this.flickState;
+    f.t += delta / (FLICK_FLIGHT_MS / 1000);
+    const p = spritePoint(f.from, f.to, f.t);
+    this.flickMesh.position.set(p.x, p.y, p.z);
+    if (f.t >= 1) {
+      const id = f.wordId;
+      this.flickState = null;
+      this.flickMesh.visible = false;
+      this.wakeById(id);
+    }
+  }
+
   /** Wake a target by id (voice / gaze-pinch path): same grading guard as poke.
    * Already-awake, not-due words never re-grade (no SRS/rush farming). */
   private wakeById(id: string): void {
@@ -352,6 +415,11 @@ export class WordSystem extends createSystem({
       this.persistProgress(); playSfx('wake');
       if (this.rush?.phase === 'running') this.rush = hitRush(this.rush, true);
       if (this.quest?.wordId === id) this.refreshQuest(true);
+    }
+    // Onboarding ghost-flick completes when the window wakes by flick/voice/gaze.
+    if (!this.persisted?.onboardingDone && this.onbStep === 'ghost-flick' && id === 'window') {
+      this.onbStep = nextOnboarding(this.onbStep, 'wake:window');
+      this.caption(onboardingCaption(this.onbStep));
     }
   }
 
@@ -406,6 +474,12 @@ export class WordSystem extends createSystem({
     this.buildCafeProps(table.position);
     this.buildEcho(table.position);
     this.buildMural();
+    try { // Flick sprite: one pooled glowing orb, flown by launchFlick().
+      const sprite = new Mesh(new SphereGeometry(0.02, 16, 12), new MeshStandardMaterial({ color: 0xffb43a, emissive: 0xcc7a00 }));
+      sprite.visible = false;
+      this.world.createTransformEntity(sprite);
+      this.flickMesh = sprite;
+    } catch { /* flick optional; ray-pinch remains */ }
     // Mic orb near table front edge: press to start voice wake (consent first use).
     try {
       const orb = new Mesh(new SphereGeometry(0.035, 20, 16), new MeshStandardMaterial({ color: 0x7c9eff, emissive: 0x3355aa }));
@@ -627,6 +701,8 @@ export class WordSystem extends createSystem({
   /** Real room: one target per known semantic label, marker at mesh center. */
   private claimSceneMesh(entity: { getValue: Function; object3D?: { position: { x: number; y: number; z: number } } | null }): void {
     const label = entity.getValue(XRMesh, 'semanticLabel') as string;
+    // Room-aware curriculum: collect label NAMES only (never geometry), debounced fetch in update().
+    if (label && !this.rawLabels.has(label)) { this.rawLabels.add(label); this.lastClaimMs = performance.now(); }
     const entry = label ? wordForSceneLabel(label) : undefined;
     if (!entry || this.claimedLabels.has(entry.id)) return; // skip unknown, dedupe
     this.claimedLabels.add(entry.id);
@@ -697,6 +773,8 @@ export class WordSystem extends createSystem({
     this.checkCafeUnlock();
     this.updateEchoForm();
     this.updateMural();
+    this.maybeFetchRoomPack();
+    this.updateFlick(delta);
     if (!this.questAnnounced) { this.questAnnounced = true; if (this.quest) { const e = wordById(this.quest.wordId); if (e) this.caption(`Wake the ${e.word}`); } }
     // Hush Rush tick + in-world timer/score caption (sticky while running).
     if (this.rush?.phase === 'running') {
@@ -730,7 +808,26 @@ export class WordSystem extends createSystem({
         }
         const pads = (this as unknown as { input?: { xr?: { gamepads?: { left?: { getButtonDown(b: unknown): boolean }; right?: { getButtonDown(b: unknown): boolean } } } } }).input?.xr?.gamepads;
         const down = !!(pads?.left?.getButtonDown(InputComponent.Trigger) || pads?.right?.getButtonDown(InputComponent.Trigger));
-        if (down && !this.prevTrigger && this.gazeId) { const id = this.gazeId; const e2 = wordById(id); if (e2) speak(e2, this.helperLangNow(), this.immersionNow()); this.wakeById(id); }
+        // Hand speed for flick detection (ray space motion between frames).
+        try {
+          const ray = (this.player as unknown as { raySpaces?: { right?: { position: { x: number; y: number; z: number } }; left?: { position: { x: number; y: number; z: number } } } }).raySpaces;
+          const rp = ray?.right?.position ?? ray?.left?.position;
+          if (rp) {
+            const nowMs = performance.now();
+            if (this.prevRayPos) this.handSpeedNow = handSpeedMs(this.prevRayPos, rp, nowMs - this.prevRayAt);
+            this.prevRayPos = { x: rp.x, y: rp.y, z: rp.z };
+            this.prevRayAt = nowMs;
+          }
+        } catch { /* speed optional */ }
+        if (!down) this.flickLatch = false;
+        // Pinch (edge) or fast hand flick while pinching: throw sprite at assisted target.
+        if (down && this.gazeId && !this.flickState && !this.flickLatch && (!this.prevTrigger || isFlick(this.handSpeedNow))) {
+          const id = this.gazeId;
+          const e2 = wordById(id);
+          if (e2) speak(e2, this.helperLangNow(), this.immersionNow());
+          this.flickLatch = true;
+          this.launchFlick(id);
+        }
         this.prevTrigger = down;
       }
     } catch { /* gaze optional; ray-pinch remains */ }

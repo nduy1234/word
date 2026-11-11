@@ -96,6 +96,15 @@ Over budget → fix order: reduce marker sphere segments, merge prop geometries,
 | P1-11 | Wake 10/12 home + 4/5 kitchen: "The Cafe is open!" + 12 cafe props appear on table back row, questable | | |
 | Perf-P1 | fps / draw calls / triangles with cafe+echo+mural (estimate +14 calls, still <100) | | |
 
+## P2 results (fill in on device / emulator)
+
+| # | Check | Result | Notes |
+|---|---|---|---|
+| P2-12 | Room with scene labels: ~2s after labels claim, quest order prefers pack words for this room; network off: seed quests continue, no error | | |
+| P2-13a | Gaze far target (door/window) + pinch: sprite flies ~0.3s with arc and wakes target on arrival | | |
+| P2-13b | Fast hand flick while pinching also throws sprite; slow ray-pinch on near props unchanged | | |
+| P2-13c | Aim off-target (>15 deg): no wake, no sprite spam | | |
+
 
 ## G. Content / safety spot-check
 - English UI everywhere; IPA on tap; helper hints hidden in Immersion mode.

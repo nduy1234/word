@@ -11,6 +11,12 @@ export function seedPackForLabels(labels: string[]): WordEntry[] {
   const unique = [...new Map(words.map((w) => [w.id, w])).values()];
   return unique.length ? unique : ROOM_WORDS;
 }
+/** Room-aware curriculum drives quest order: first quest whose word is in the pack. */
+export function preferPackQuest<T extends { wordId: string }>(quests: T[], packWordIds: string[]): T | undefined {
+  if (!packWordIds.length) return undefined;
+  const set = new Set(packWordIds);
+  return quests.find((q) => set.has(q.wordId));
+}
 export async function fetchRoomPack(labels: string[], storage: StorageLike, fetchFn: typeof fetch = fetch): Promise<{ words: WordEntry[]; source: 'ai' | 'cache' | 'seed' }> {
   const clean = sanitizeLabels(labels);
   const cacheKey = keyFor(clean);
