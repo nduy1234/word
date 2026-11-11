@@ -47,3 +47,6 @@ pids/
 .vscode/mcp.json
 .codex/config.toml
 .gstack/
+
+.vercel
+.env*

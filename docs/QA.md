@@ -105,6 +105,16 @@ Over budget → fix order: reduce marker sphere segments, merge prop geometries,
 | P2-13b | Fast hand flick while pinching also throws sprite; slow ray-pinch on near props unchanged | | |
 | P2-13c | Aim off-target (>15 deg): no wake, no sprite spam | | |
 
+## Release checklist (v1.0.0)
+
+| # | Check | Result | Notes |
+|---|---|---|---|
+| R1 | `npm run build` passes; cold start <5s on Quest Browser (time it) | | |
+| R2 | Secret scan: no `META_API_KEY`/tokens in repo or `dist/` bundle | | scan run 2026-11-10: clean in src/api/public/docs/packs |
+| R3 | All `/api` routes read `META_API_KEY` from server env only | | `api/_shared.ts`, `api/transcribe.ts` only |
+| R4 | Production URL opens on fresh Quest Browser, MR + VR entry work | | |
+| R5 | After final deploy: auto-deploy disabled (Vercel Git Ignored Build Step `exit 1`) before Nov 18 12:00pm PT | | |
+
 
 ## G. Content / safety spot-check
 - English UI everywhere; IPA on tap; helper hints hidden in Immersion mode.
