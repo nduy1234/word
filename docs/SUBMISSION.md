@@ -1,7 +1,7 @@
 # Submission — Word: Wake Your Room
 
 - **Name:** Word: Wake Your Room
-- **Tagline:** The Hush stole your room's names. Poke, pinch, flick, and speak English to wake your real room back to life. (111 chars)
+- **Tagline:** The Hush stole your room's names. Poke, pinch, flick, and speak English to wake your real room back to life. (108 chars)
 - **Track:** Gaming
 - **Division:** New Experience
 - **Live URL:** https://word-liard-beta.vercel.app/
