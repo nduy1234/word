@@ -14,7 +14,10 @@ export function cached<T>(key: string, ttlMs = 300_000): T | undefined {
 export function putCache(key: string, value: unknown): void { cache.set(key, { at: Date.now(), value }); }
 export function clientKey(req: { headers?: Record<string, string | string[] | undefined> }): string {
   const fwd = req.headers?.['x-forwarded-for'];
-  return (Array.isArray(fwd) ? fwd[0] : fwd ?? 'local').slice(0, 64);
+  // First hop only: full chain varies per proxy hop, so keying on it lets
+  // one client rotate rate-limit buckets by adding fake trailing IPs.
+  const first = (Array.isArray(fwd) ? fwd[0] : fwd ?? 'local').split(',')[0].trim() || 'local';
+  return first.slice(0, 64);
 }
 /** Meta Model API chat call. Returns null on any failure — caller falls back, never claims model. */
 export async function metaChat(system: string, user: string, timeoutMs = 5000): Promise<string | null> {

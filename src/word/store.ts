@@ -51,7 +51,19 @@ export function load(storage: StorageLike): SaveState {
     for (const [k, v] of Object.entries(rawTable)) { // drop corrupt offsets: NaN positions must never restore
       if (v && Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z)) tableRelative[k] = { x: v.x, y: v.y, z: v.z };
     }
-    return { ...emptySave(), ...p, cards, awake, tableRelative };
+    const out: SaveState = { ...emptySave(), ...p, cards, awake, tableRelative };
+    // Optional fields are spread verbatim above: sanitize shapes so a corrupt
+    // save can't turn runtime math into NaN/strings ('Best NaN', streak resets).
+    const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+    const petals = num(p.petals); if (petals === undefined) delete out.petals; else out.petals = Math.max(0, Math.floor(petals));
+    const rushBest = num(p.rushBest); if (rushBest === undefined) delete out.rushBest; else out.rushBest = Math.max(0, rushBest);
+    out.ownedCosmetics = Array.isArray(p.ownedCosmetics) ? p.ownedCosmetics.filter((x): x is string => typeof x === 'string') : undefined;
+    const st = p.streak;
+    if (st && typeof st === 'object' && typeof st.lastDay === 'string' && typeof st.weekKey === 'string'
+      && num(st.count) !== undefined && num(st.freezesLeft) !== undefined) {
+      out.streak = { lastDay: st.lastDay, weekKey: st.weekKey, count: Math.max(0, Math.floor(st.count)), freezesLeft: Math.min(2, Math.max(0, Math.floor(st.freezesLeft))) };
+    } else delete out.streak;
+    return out;
   } catch { return emptySave(); }
 }
 

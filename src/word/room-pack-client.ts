@@ -17,11 +17,14 @@ export function preferPackQuest<T extends { wordId: string }>(quests: T[], packW
   const set = new Set(packWordIds);
   return quests.find((q) => set.has(q.wordId));
 }
-export async function fetchRoomPack(labels: string[], storage: StorageLike, fetchFn: typeof fetch = fetch): Promise<{ words: WordEntry[]; source: 'ai' | 'cache' | 'seed' }> {
+export async function fetchRoomPack(labels: string[], storage: StorageLike, fetchFn: typeof fetch = fetch, timeoutMs = 5000): Promise<{ words: WordEntry[]; source: 'ai' | 'cache' | 'seed' }> {
   const clean = sanitizeLabels(labels);
   const cacheKey = keyFor(clean);
+  // 5s cap (PLAN latency rule): a hung fetch must still reach cache/seed fallback.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetchFn('/api/room-pack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labels: clean }) });
+    const res = await fetchFn('/api/room-pack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labels: clean }), signal: ctrl.signal });
     if (res.ok) {
       const valid = validateRoomPack(await res.json());
       if (valid) { try { storage.setItem(cacheKey, JSON.stringify(valid.words)); } catch { /* ignore */ } return { words: valid.words, source: 'ai' }; }
@@ -33,5 +36,5 @@ export async function fetchRoomPack(labels: string[], storage: StorageLike, fetc
       if (cached) { const valid = validateRoomPack({ words: JSON.parse(cached) }); if (valid) return { words: valid.words, source: 'cache' }; }
     } catch { /* fall through */ }
     return { words: seedPackForLabels(clean), source: 'seed' };
-  }
+  } finally { clearTimeout(timer); }
 }

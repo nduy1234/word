@@ -22,7 +22,7 @@ def main():
         print("SKIP: no art-manifest.json — run generate_art.py first")
         return 0
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    generated = [m for m in manifest if m["status"] == "generated" and (OUT / m["file"]).exists()]
+    generated = [m for m in manifest if m.get("status") == "generated" and (OUT / m["file"]).exists()]
     layout = {"cellPx": CELL, "cols": 8, "ktx2": "atlas.ktx2", "entries": [
         {"id": m["id"], "file": m["file"], "cell": i} for i, m in enumerate(manifest)]}
     (OUT / "atlas-layout.json").write_text(json.dumps(layout, indent=2) + "\n", encoding="utf-8")

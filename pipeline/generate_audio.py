@@ -20,7 +20,8 @@ def words():
         yield from json.loads(p.read_text(encoding="utf-8"))["words"]
 
 def main():
-    engine = "sapi" if "--engine" in sys.argv and sys.argv[sys.argv.index("--engine") + 1] == "sapi" else "none"
+    i = sys.argv.index("--engine") if "--engine" in sys.argv else -1
+    engine = "sapi" if 0 <= i < len(sys.argv) - 1 and sys.argv[i + 1] == "sapi" else "none"
     locales = ["en-US", "en-GB"] if "--uk" in sys.argv else ["en-US"]
     OUT.mkdir(parents=True, exist_ok=True)
     manifest = []

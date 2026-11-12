@@ -19,6 +19,8 @@ export default async function handler(req: Req, res: Res): Promise<void> {
   const user = `Known word ids: ${knownIds.join(', ') || 'none'}. Just woke: ${String(body?.justWokeId ?? 'none')}. Level: ${body?.cefr === 'A2' ? 'A2' : 'A1'}.`;
   const valid = validateEchoResponse(parseJson(await metaChat(system, user)), new Set(knownIds));
   const out = valid ?? scriptedEcho(0, knownIds);
-  putCache(cacheKey, out);
+  // Cache only real AI results: caching a transient-failure fallback would
+  // serve scripted lines long after the upstream recovers.
+  if (valid) putCache(cacheKey, out);
   res.status(200).json(out);
 }

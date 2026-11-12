@@ -18,6 +18,8 @@ export default async function handler(req: Req, res: Res): Promise<void> {
   const system = 'Return ONLY strict JSON {"words":[...]}. Each word: id, word, ipa (/.../), partOfSpeech (noun|verb|phrasalVerb|preposition|adjective), plural+article(a|an) for nouns, cefr A1|A2, example containing the word, helper {es,vi}, sceneLabel or propId (exactly one, nouns only), wakeFx "bloom", rarity common|rare|gold, audio "audio/en-US/<id>.mp3". English only targets. Ages 10+. No brands.';
   const valid = validateRoomPack(parseJson(await metaChat(system, `Room labels (names only): ${labels.join(', ') || 'table'}`)));
   const out = valid ?? { words: seedPackForLabels(labels) };
-  putCache(cacheKey, out);
+  // Cache only real AI results: caching a seed fallback (e.g. no-key window)
+  // would shadow a working upstream for the full 1h TTL.
+  if (valid) putCache(cacheKey, out);
   res.status(200).json(out);
 }

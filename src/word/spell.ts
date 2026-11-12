@@ -85,9 +85,14 @@ function reject(reason: SnapReject, hint: string): SnapResult {
 
 /** Article/plural gate checked at the moment a noun snaps into a phrase. */
 function checkNounSnap(np: NounPhrase, noun: Tile): SnapResult | null {
-  if (np.article && np.article.text !== 'the' && noun.form !== 'plural'
-    && noun.article && noun.article !== np.article.text) {
-    return reject('article-mismatch', `Say "${noun.article} ${noun.text}" - try the other little word.`);
+  if (np.article && np.article.text !== 'the' && noun.form !== 'plural') {
+    // No stored article = uncountable (milk, water): 'the' only, never a/an.
+    if (!noun.article) {
+      return reject('article-mismatch', `Say "the ${noun.text}" - this word has no a/an.`);
+    }
+    if (noun.article !== np.article.text) {
+      return reject('article-mismatch', `Say "${noun.article} ${noun.text}" - try the other little word.`);
+    }
   }
   if (np.article && np.article.text !== 'the' && noun.form === 'plural') {
     return reject('plural-after-article', `"${np.article.text} ${noun.text}"? Drop the little word for many.`);
