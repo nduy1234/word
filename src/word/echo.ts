@@ -23,7 +23,7 @@ export async function askEcho(input: { knownIds: string[]; justWokeId?: string; 
     if (!res.ok) throw new Error('echo-http');
     const valid = validateEchoResponse(await res.json(), new Set(input.knownIds));
     if (!valid) throw new Error('echo-schema');
-    if (valid.spell.length && !spellFromIds(valid.spell, wordById)) throw new Error('echo-spell'); // grammar-invalid spell: never trust model output
+    if (valid.spell.length && !spellFromIds(valid.spell, wordById)) valid.spell = []; // grammar-invalid spell: drop tiles, keep line — spell is aux, line is the reply
     if (valid.newWordId && !wordById(valid.newWordId) && !input.knownIds.includes(valid.newWordId)) { /* id checked server-side too; keep line, drop unknown new word */ valid.newWordId = null; }
     return { data: valid, source: 'ai' };
   } catch {

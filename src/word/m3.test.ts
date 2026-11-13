@@ -44,6 +44,11 @@ describe('Echo client + API fallback (network off)', () => {
     expect(r.source).toBe('scripted'); expect(r.data.line).toBeTruthy(); expect(thinking).toEqual([true, false]);
     expect(scriptedEcho(0, []).newWordId).toBe('window');
   });
+  it('askEcho: grammar-invalid spell drops tiles, AI line survives (not scripted)', async () => {
+    const fetchFn = async () => ({ ok: true, json: async () => ({ line: 'The table is awake!', newWordId: null, spell: ['window', 'open'] }) }) as never;
+    const r = await askEcho({ knownIds: ['table'] }, { fetchFn });
+    expect(r.source).toBe('ai'); expect(r.data.line).toBe('The table is awake!'); expect(r.data.spell).toEqual([]);
+  });
   it('/api/echo returns scripted JSON without key', async () => {
     const res = mockRes();
     await handlerEcho({ method: 'POST', body: { knownIds: ['cup'] }, headers: {} }, res as never);

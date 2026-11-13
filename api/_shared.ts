@@ -45,8 +45,17 @@ export async function metaChat(system: string, user: string, timeoutMs = 12000, 
         await sleep(Number.isFinite(ra) && ra > 0 ? Math.min(ra, 10) * 1000 : 2000 * (attempt + 1));
         continue;
       }
-      const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-      return data.choices?.[0]?.message?.content ?? null;
+      const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
+      const content = data.choices?.[0]?.message?.content ?? null;
+      if (!content?.trim()) {
+        // Upstream 200 with empty content (observed 2026-11-13, token cap
+        // truncation): parse/validate downstream would script-fallback. Retry.
+        console.error(`metaChat empty content finish=${data.choices?.[0]?.finish_reason ?? 'unknown'}`);
+        if (attempt === 2) return null;
+        await sleep(1000 * (attempt + 1));
+        continue;
+      }
+      return content;
     } catch (err) {
       console.error(`metaChat fetch failed: ${err instanceof Error ? err.name : 'unknown'}`);
       if (attempt === 2) return null;
