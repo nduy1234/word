@@ -4,6 +4,7 @@ import { validateEchoResponse } from '../src/word/ai-schema.js';
 import { scriptedEcho } from '../src/word/echo.js';
 
 export const config = { runtime: 'nodejs' };
+export const maxDuration = 60; // upstream chat can take ~15s + one retry
 type Req = { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> };
 type Res = { status(c: number): { json(b: unknown): void } };
 
