@@ -38,10 +38,10 @@ describe('bugfix guards', () => {
     const c = await fetchRoomPack(['wall'], s, off as never);
     expect(c.source).toBe('seed'); // different labels: must not reuse table cache
   });
-  it('Echo: grammar-invalid spell from AI falls back to scripted', async () => {
+  it('Echo: grammar-invalid spell from AI drops tiles, line stays AI (not scripted)', async () => {
     const bad = async () => ({ ok: true, json: async () => ({ line: 'Hi there friend', newWordId: null, spell: ['window', 'open'] }) });
     const r = await askEcho({ knownIds: [] }, { fetchFn: bad as never });
-    expect(r.source).toBe('scripted');
+    expect(r.source).toBe('ai'); expect(r.data.line).toBe('Hi there friend'); expect(r.data.spell).toEqual([]);
     const good = async () => ({ ok: true, json: async () => ({ line: 'Open it', newWordId: null, spell: ['open', 'article-the', 'window'] }) });
     expect((await askEcho({ knownIds: [] }, { fetchFn: good as never })).source).toBe('ai');
   });

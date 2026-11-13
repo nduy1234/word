@@ -14,7 +14,7 @@ export function newCard(wordId: string, now: number): CardState {
 
 /** grade: 0-2 wrong, 3 hard, 4 good, 5 easy. Returns new state (no mutation). */
 export function gradeCard(card: CardState, grade: number, now: number): CardState {
-  const g = Math.max(0, Math.min(5, Math.round(grade)));
+  const g = Math.max(0, Math.min(5, Math.round(Number.isFinite(grade) ? grade : 0)));
   let { reps, ease, intervalDays, lapses } = card;
   ease = Math.max(1.3, ease + (0.1 - (5 - g) * (0.08 + (5 - g) * 0.02)));
   if (g < 3) {
