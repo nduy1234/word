@@ -17,7 +17,7 @@ export async function askEcho(input: { knownIds: string[]; justWokeId?: string; 
   const fetchFn = deps.fetchFn ?? fetch;
   deps.onThinking?.(true);
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), deps.timeoutMs ?? 5000);
+  const timer = setTimeout(() => ctrl.abort(), deps.timeoutMs ?? 15000); // Muse Spark measured ~6.6s upstream (2026-11-12); Echo is ambient, never blocks play
   try {
     const res = await fetchFn('/api/echo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input), signal: ctrl.signal });
     if (!res.ok) throw new Error('echo-http');

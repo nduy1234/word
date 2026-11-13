@@ -15,7 +15,7 @@ export type VoiceOutcome =
   | (MatchResult & { via: 'voice' })
   | { result: 'fallback'; reason: 'offline' | 'timeout' | 'mic-denied' | 'server' | 'no-recorder' };
 
-export const TRANSCRIBE_TIMEOUT_MS = 5000;
+export const TRANSCRIBE_TIMEOUT_MS = 10000;
 
 export async function voiceWake(opts: {
   targetWord: string;

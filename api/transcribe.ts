@@ -14,7 +14,7 @@ import { clientKey, rateLimited } from './_shared.js';
 export const config = { runtime: 'nodejs', api: { bodyParser: false } };
 
 const META_ASR = 'https://api.meta.ai/v1/asr/transcribe';
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 9000;
 const MAX_AUDIO_BYTES = 1_000_000; // 3s clip is far below this; cap abuse
 
 type Req = {

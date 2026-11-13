@@ -17,10 +17,11 @@ export function preferPackQuest<T extends { wordId: string }>(quests: T[], packW
   const set = new Set(packWordIds);
   return quests.find((q) => set.has(q.wordId));
 }
-export async function fetchRoomPack(labels: string[], storage: StorageLike, fetchFn: typeof fetch = fetch, timeoutMs = 5000): Promise<{ words: WordEntry[]; source: 'ai' | 'cache' | 'seed' }> {
+export async function fetchRoomPack(labels: string[], storage: StorageLike, fetchFn: typeof fetch = fetch, timeoutMs = 15000): Promise<{ words: WordEntry[]; source: 'ai' | 'cache' | 'seed' }> {
   const clean = sanitizeLabels(labels);
   const cacheKey = keyFor(clean);
-  // 5s cap (PLAN latency rule): a hung fetch must still reach cache/seed fallback.
+  // Cap (PLAN latency rule): a hung fetch must still reach cache/seed fallback.
+  // 15s: Muse Spark upstream measured ~6.6s (2026-11-12), 5s always fell back.
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {

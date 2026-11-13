@@ -20,7 +20,7 @@ export function clientKey(req: { headers?: Record<string, string | string[] | un
   return first.slice(0, 64);
 }
 /** Meta Model API chat call. Returns null on any failure — caller falls back, never claims model. */
-export async function metaChat(system: string, user: string, timeoutMs = 5000): Promise<string | null> {
+export async function metaChat(system: string, user: string, timeoutMs = 15000): Promise<string | null> {
   const key = process.env.META_API_KEY;
   if (!key) return null;
   const ctrl = new AbortController();
