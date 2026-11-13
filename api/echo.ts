@@ -2,7 +2,7 @@
 import { cached, clientKey, metaChat, parseJson, putCache, rateLimited } from './_shared.js';
 import { isValidId, spellFromIds, validateEchoResponse } from '../src/word/ai-schema.js';
 import { scriptedEcho } from '../src/word/echo.js';
-import { wordById } from '../src/word/pack.js';
+import { wordById, ROOM_WORDS } from '../src/word/pack.js';
 
 export const config = { runtime: 'nodejs' };
 export const maxDuration = 60; // upstream chat can take ~15s + one retry
@@ -17,9 +17,16 @@ export default async function handler(req: Req, res: Res): Promise<void> {
   const cacheKey = `echo:${[...knownIds].sort().join(',')}:${String(body?.justWokeId ?? '')}:${body?.cefr === 'A2' ? 'A2' : 'A1'}`;
   const hit = cached(cacheKey);
   if (hit) { res.status(200).json(hit); return; }
-  const system = 'You are Echo, a kind spirit for English learners age 10+, CEFR A1-A2. Reply ONLY strict JSON {"line":string,"newWordId":string|null,"spell":string[]}. line: one short simple English sentence, only known words plus at most 1 new word. spell: tile ids forming a valid English spell (verb, article-a/an/the, adjective, noun, preposition, noun). Never add explanation.';
-  const user = `Known word ids: ${knownIds.join(', ') || 'none'}. Just woke: ${String(body?.justWokeId ?? 'none')}. Level: ${body?.cefr === 'A2' ? 'A2' : 'A1'}.`;
-  const raw = parseJson(await metaChat(system, user, 12_000, 1000)); // 300-token cap truncated to empty content upstream (2026-11-13 replica)
+  // Prompt shape live-verified 2026-11-13: a "only known words + at most 1 new
+  // word" constraint makes muse-spark burn the whole token budget reasoning
+  // (finish=length, content empty) at any cap. Concrete template + candidate
+  // list finishes in ~800 reasoning tokens. Server validators still enforce
+  // shape/grammar on whatever comes back.
+  const justWoke = String(body?.justWokeId ?? 'none');
+  const candidates = ROOM_WORDS.filter((w) => !knownIds.includes(w.id)).slice(0, 6).map((w) => w.id);
+  const system = `You are Echo, a kind spirit for English learners age 10+, CEFR A1-A2. Reply ONLY strict JSON {"line":string,"newWordId":string|null,"spell":string[]}. line: one short friendly simple sentence, max 12 words, about the just-woke word. newWordId: one id from the candidate list, or null. spell: exactly ["open","article-the","${justWoke}"] when a word just woke, else []. Answer immediately.`;
+  const user = `Just woke: ${justWoke}. Known word ids: ${knownIds.join(', ') || 'none'}. New word candidates: ${candidates.join(', ') || 'none'}. Level: ${body?.cefr === 'A2' ? 'A2' : 'A1'}.`;
+  const raw = parseJson(await metaChat(system, user, 15_000, 1500));
   let valid = validateEchoResponse(raw, new Set(knownIds));
   if (!valid && raw && typeof raw === 'object') {
     // Salvage: line stays strict-validated; aux fields coerce instead of
