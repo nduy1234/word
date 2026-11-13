@@ -22,10 +22,11 @@ export function clientKey(req: { headers?: Record<string, string | string[] | un
 /** Meta Model API chat call. Returns null on any failure — caller falls back, never claims model.
  * Upstream measured ~6.6s and intermittently 503/>15s from Vercel (2026-11-12):
  * cap output tokens for speed, retry once on 5xx/abort within the attempt budget. */
-export async function metaChat(system: string, user: string, timeoutMs = 15000, maxTokens = 300): Promise<string | null> {
+export async function metaChat(system: string, user: string, timeoutMs = 12000, maxTokens = 300): Promise<string | null> {
   const key = process.env.META_API_KEY;
   if (!key) return null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  for (let attempt = 0; attempt < 3; attempt++) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
@@ -37,14 +38,19 @@ export async function metaChat(system: string, user: string, timeoutMs = 15000, 
       });
       if (!res.ok) {
         console.error(`metaChat upstream status ${res.status}`);
-        if (res.status < 500) return null;
+        if (res.status !== 429 && res.status < 500) return null;
+        if (attempt === 2) return null;
+        // 429 = shared-egress throttling (local calls succeed): honor Retry-After, else back off.
+        const ra = Number(res.headers.get('retry-after'));
+        await sleep(Number.isFinite(ra) && ra > 0 ? Math.min(ra, 10) * 1000 : 2000 * (attempt + 1));
         continue;
       }
       const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
       return data.choices?.[0]?.message?.content ?? null;
     } catch (err) {
       console.error(`metaChat fetch failed: ${err instanceof Error ? err.name : 'unknown'}`);
-      if (attempt === 1) return null;
+      if (attempt === 2) return null;
+      await sleep(1000 * (attempt + 1));
     } finally { clearTimeout(timer); }
   }
   return null;
