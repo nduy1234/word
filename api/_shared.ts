@@ -32,10 +32,10 @@ export async function metaChat(system: string, user: string, timeoutMs = 5000): 
       body: JSON.stringify({ model: 'muse-spark-1.3', temperature: 0.4, response_format: { type: 'json_object' },
         messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) { console.error(`metaChat upstream status ${res.status}`); return null; }
     const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     return data.choices?.[0]?.message?.content ?? null;
-  } catch { return null; } finally { clearTimeout(timer); }
+  } catch (err) { console.error(`metaChat fetch failed: ${err instanceof Error ? err.name : 'unknown'}`); return null; } finally { clearTimeout(timer); }
 }
 export function parseJson(text: string | null): unknown {
   if (!text) return null;
