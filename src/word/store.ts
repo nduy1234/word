@@ -1,7 +1,7 @@
 /** Persistence + table-relative anchor fallback. Pure storage logic, unit-tested.
  * Persistent XR anchors attempted at runtime layer; this module is the guaranteed
  * fallback: positions stored relative to table origin, survives restart/re-localize. */
-import type { CardState } from './scheduler.js';
+import { newCard, type CardState } from './scheduler.js';
 
 export interface Vec3Like { x: number; y: number; z: number }
 export interface SaveState {
@@ -46,6 +46,10 @@ export function load(storage: StorageLike): SaveState {
     const cards = p.cards.filter((c) => c && typeof c.wordId === 'string' && Number.isFinite(c.dueAt) && Number.isFinite(c.ease))
       .map((c) => ({ ...c, reps: Math.max(0, Math.floor(c.reps) || 0), lapses: Math.max(0, Math.floor(c.lapses) || 0), intervalDays: Number.isFinite(c.intervalDays) ? Math.max(0, c.intervalDays) : 0, ease: Math.max(1.3, c.ease) }));
     const awake = Array.isArray(p.awake) ? p.awake.filter((x): x is string => typeof x === 'string') : [];
+    // Awake without a card is unwakeable (state awake, nothing due): synthesize
+    // a due-now card so the word re-enters review instead of sticking forever.
+    const cardIds = new Set(cards.map((c) => c.wordId));
+    for (const id of awake) if (!cardIds.has(id)) cards.push(newCard(id, Date.now()));
     const rawTable = p.tableRelative && typeof p.tableRelative === 'object' && !Array.isArray(p.tableRelative) ? p.tableRelative : {};
     const tableRelative: Record<string, Vec3Like> = {};
     for (const [k, v] of Object.entries(rawTable)) { // drop corrupt offsets: NaN positions must never restore
@@ -63,6 +67,20 @@ export function load(storage: StorageLike): SaveState {
       && num(st.count) !== undefined && num(st.freezesLeft) !== undefined) {
       out.streak = { lastDay: st.lastDay, weekKey: st.weekKey, count: Math.max(0, Math.floor(st.count)), freezesLeft: Math.min(2, Math.max(0, Math.floor(st.freezesLeft))) };
     } else delete out.streak;
+    out.helperLang = ['auto', 'es', 'vi', 'none'].includes(p.helperLang as string) ? p.helperLang : 'auto';
+    out.immersion = p.immersion === true;
+    if (p.voiceConsent !== undefined) out.voiceConsent = p.voiceConsent === true;
+    if (p.onboarding !== undefined && typeof p.onboarding !== 'string') delete out.onboarding;
+    if (p.onboardingDone !== undefined) out.onboardingDone = p.onboardingDone === true;
+    const a = p.a11y;
+    if (a && typeof a === 'object' && !Array.isArray(a)) {
+      out.a11y = {
+        highContrast: typeof a.highContrast === 'boolean' ? a.highContrast : false,
+        captionScale: ([1, 1.25, 1.5] as const).includes(a.captionScale as 1) ? (a.captionScale as 1 | 1.25 | 1.5) : 1,
+        reducedMotion: typeof a.reducedMotion === 'boolean' ? a.reducedMotion : false,
+        colorblindSafe: typeof a.colorblindSafe === 'boolean' ? a.colorblindSafe : true,
+      };
+    } else delete out.a11y;
     return out;
   } catch { return emptySave(); }
 }

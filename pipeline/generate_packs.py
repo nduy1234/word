@@ -14,7 +14,7 @@ PACK_TS = ROOT / "src/word/pack.ts"
 OUT = ROOT / "packs/en"
 REVIEW = ROOT / "pipeline/review.md"
 
-SETS = {"ROOM_WORDS": "living-room", "KITCHEN_PROPS": "kitchen",
+SETS = {"ROOM_WORDS": "living-room", "KITCHEN_PROPS": "kitchen", "CAFE_PROPS": "cafe",
         "VERBS": "grammar-verbs", "PHRASAL_VERBS": "grammar-phrasal-verbs",
         "PREPOSITIONS": "grammar-prepositions", "ADJECTIVES": "grammar-adjectives"}
 IRREGULAR_PLURALS = {"shelf": "shelves"}
@@ -68,7 +68,8 @@ def crosscheck(sets):
             if e["cefr"] not in ("A1", "A2"):
                 problems.append(f"- `{tag}`: CEFR not A1/A2: `{e['cefr']}`")
             if e["partOfSpeech"] == "noun":
-                if e.get("article") != expected_article(e["word"]):
+                # No stored article = uncountable (milk, water): valid encoding, not a disagreement.
+                if e.get("article") is not None and e.get("article") != expected_article(e["word"]):
                     problems.append(f"- `{tag}`: article stored `{e.get('article')}` != rule `{expected_article(e['word'])}` — HUMAN CHECK (sound, not spelling)")
                 if e.get("plural") != expected_plural(e["word"]):
                     problems.append(f"- `{tag}`: plural stored `{e.get('plural')}` != rule `{expected_plural(e['word'])}`")

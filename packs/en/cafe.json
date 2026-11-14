@@ -1,0 +1,217 @@
+{
+  "packId": "en-cafe",
+  "lang": "en",
+  "room": "cafe",
+  "version": 1,
+  "words": [
+    {
+      "id": "milk",
+      "word": "milk",
+      "ipa": "/mɪlk/",
+      "partOfSpeech": "noun",
+      "plural": "milks",
+      "cefr": "A1",
+      "example": "The milk is cold.",
+      "propId": "milk",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/milk.wav",
+      "helper": {
+        "es": "la leche",
+        "vi": "sữa"
+      }
+    },
+    {
+      "id": "tea",
+      "word": "tea",
+      "ipa": "/tiː/",
+      "partOfSpeech": "noun",
+      "plural": "teas",
+      "cefr": "A1",
+      "example": "The tea is hot.",
+      "propId": "tea",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/tea.wav",
+      "helper": {
+        "es": "el té",
+        "vi": "trà"
+      }
+    },
+    {
+      "id": "cake",
+      "word": "cake",
+      "ipa": "/keɪk/",
+      "partOfSpeech": "noun",
+      "plural": "cakes",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The cake is sweet.",
+      "propId": "cake",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/cake.wav",
+      "helper": {
+        "es": "el pastel",
+        "vi": "bánh"
+      }
+    },
+    {
+      "id": "bread",
+      "word": "bread",
+      "ipa": "/bred/",
+      "partOfSpeech": "noun",
+      "plural": "breads",
+      "cefr": "A1",
+      "example": "The bread is new.",
+      "propId": "bread",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/bread.wav",
+      "helper": {
+        "es": "el pan",
+        "vi": "bánh mì"
+      }
+    },
+    {
+      "id": "egg",
+      "word": "egg",
+      "ipa": "/eɡ/",
+      "partOfSpeech": "noun",
+      "plural": "eggs",
+      "article": "an",
+      "cefr": "A1",
+      "example": "The egg is small.",
+      "propId": "egg",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/egg.wav",
+      "helper": {
+        "es": "el huevo",
+        "vi": "trứng"
+      }
+    },
+    {
+      "id": "cheese",
+      "word": "cheese",
+      "ipa": "/tʃiːz/",
+      "partOfSpeech": "noun",
+      "plural": "cheeses",
+      "cefr": "A1",
+      "example": "The cheese is good.",
+      "propId": "cheese",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/cheese.wav",
+      "helper": {
+        "es": "el queso",
+        "vi": "phô mai"
+      }
+    },
+    {
+      "id": "juice",
+      "word": "juice",
+      "ipa": "/dʒuːs/",
+      "partOfSpeech": "noun",
+      "plural": "juices",
+      "cefr": "A1",
+      "example": "The juice is cold.",
+      "propId": "juice",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/juice.wav",
+      "helper": {
+        "es": "el jugo",
+        "vi": "nước ép"
+      }
+    },
+    {
+      "id": "water",
+      "word": "water",
+      "ipa": "/ˈwɔːtər/",
+      "partOfSpeech": "noun",
+      "plural": "waters",
+      "cefr": "A1",
+      "example": "The water is cold.",
+      "propId": "water",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/water.wav",
+      "helper": {
+        "es": "el agua",
+        "vi": "nước"
+      }
+    },
+    {
+      "id": "spoon",
+      "word": "spoon",
+      "ipa": "/spuːn/",
+      "partOfSpeech": "noun",
+      "plural": "spoons",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The spoon is small.",
+      "propId": "spoon",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/spoon.wav",
+      "helper": {
+        "es": "la cuchara",
+        "vi": "thìa"
+      }
+    },
+    {
+      "id": "fork",
+      "word": "fork",
+      "ipa": "/fɔːrk/",
+      "partOfSpeech": "noun",
+      "plural": "forks",
+      "article": "a",
+      "cefr": "A1",
+      "example": "The fork is new.",
+      "propId": "fork",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/fork.wav",
+      "helper": {
+        "es": "el tenedor",
+        "vi": "nĩa"
+      }
+    },
+    {
+      "id": "sugar",
+      "word": "sugar",
+      "ipa": "/ˈʃʊɡər/",
+      "partOfSpeech": "noun",
+      "plural": "sugars",
+      "cefr": "A1",
+      "example": "The sugar is sweet.",
+      "propId": "sugar",
+      "wakeFx": "bloom",
+      "rarity": "common",
+      "audio": "assets/audio/en-US/sugar.wav",
+      "helper": {
+        "es": "el azúcar",
+        "vi": "đường"
+      }
+    },
+    {
+      "id": "menu",
+      "word": "menu",
+      "ipa": "/ˈmenjuː/",
+      "partOfSpeech": "noun",
+      "plural": "menus",
+      "article": "a",
+      "cefr": "A2",
+      "example": "The menu is new.",
+      "propId": "menu",
+      "wakeFx": "bloom",
+      "rarity": "rare",
+      "audio": "assets/audio/en-US/menu.wav",
+      "helper": {
+        "es": "el menú",
+        "vi": "thực đơn"
+      }
+    }
+  ]
+}

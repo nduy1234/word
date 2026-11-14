@@ -13,7 +13,7 @@
       "example": "Open the door.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/open.mp3",
+      "audio": "assets/audio/en-US/open.wav",
       "helper": {
         "es": "abre",
         "vi": "mở"
@@ -28,7 +28,7 @@
       "example": "Close the window.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/close.mp3",
+      "audio": "assets/audio/en-US/close.wav",
       "helper": {
         "es": "cierra",
         "vi": "đóng"
@@ -43,7 +43,7 @@
       "example": "Touch the table.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/touch.mp3",
+      "audio": "assets/audio/en-US/touch.wav",
       "helper": {
         "es": "toca",
         "vi": "chạm"
@@ -58,7 +58,7 @@
       "example": "Look at the plant.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/look.mp3",
+      "audio": "assets/audio/en-US/look.wav",
       "helper": {
         "es": "mira",
         "vi": "nhìn"
@@ -73,7 +73,7 @@
       "example": "Put the cup on the table.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/put.mp3",
+      "audio": "assets/audio/en-US/put.wav",
       "helper": {
         "es": "pon",
         "vi": "đặt"
@@ -88,7 +88,7 @@
       "example": "Take the book.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/take.mp3",
+      "audio": "assets/audio/en-US/take.wav",
       "helper": {
         "es": "toma",
         "vi": "lấy"
@@ -103,7 +103,7 @@
       "example": "Find the cup.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/find.mp3",
+      "audio": "assets/audio/en-US/find.wav",
       "helper": {
         "es": "encuentra",
         "vi": "tìm"
@@ -118,7 +118,7 @@
       "example": "Wake the lamp.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/wake.mp3",
+      "audio": "assets/audio/en-US/wake.wav",
       "helper": {
         "es": "despierta",
         "vi": "đánh thức"

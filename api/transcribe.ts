@@ -52,8 +52,9 @@ export function extractAudioPart(body: Buffer, contentType: string | undefined):
     const next = body.indexOf(marker, dataStart);
     if (next === -1) return null;
     if (/name="audio"/.test(headers)) {
-      // Part data ends at the CRLF before the next boundary.
-      return body.subarray(dataStart, Math.max(dataStart, next - 2));
+      // Part data ends at the CRLF before the next boundary (if present).
+      const end = next >= 2 && body[next - 2] === 13 && body[next - 1] === 10 ? next - 2 : next;
+      return body.subarray(dataStart, Math.max(dataStart, end));
     }
     pos = next;
   }

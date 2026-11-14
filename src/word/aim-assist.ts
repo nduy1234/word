@@ -7,7 +7,9 @@ function norm(v: Vec3Like): Vec3Like {
 }
 function sub(a: Vec3Like, b: Vec3Like): Vec3Like { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
 export function angleDeg(a: Vec3Like, b: Vec3Like): number {
-  const d = Math.max(-1, Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z));
+  const denom = Math.hypot(a.x, a.y, a.z) * Math.hypot(b.x, b.y, b.z);
+  if (!denom) return 180; // zero vector has no direction: never aim-assist to it
+  const d = Math.max(-1, Math.min(1, (a.x * b.x + a.y * b.y + a.z * b.z) / denom));
   return (Math.acos(d) * 180) / Math.PI;
 }
 

@@ -408,6 +408,7 @@ export class WordSystem extends createSystem({
   /** Wake a target by id (voice / gaze-pinch path): same grading guard as poke.
    * Already-awake, not-due words never re-grade (no SRS/rush farming). */
   private wakeById(id: string): void {
+    let woke = false;
     for (const entity of this.queries.targets.entities) {
       if ((entity.getValue(WordTarget, 'wordId') ?? '') !== id) continue;
       const state = entity.getValue(WordTarget, 'state');
@@ -421,9 +422,11 @@ export class WordSystem extends createSystem({
       this.persistProgress(); playSfx('wake');
       if (this.rush?.phase === 'running') this.rush = hitRush(this.rush, true);
       if (this.quest?.wordId === id) this.refreshQuest(true);
+      woke = true;
+      break; // duplicate entities for one word must never grade twice
     }
-    // Onboarding ghost-flick completes when the window wakes by flick/voice/gaze.
-    if (!this.persisted?.onboardingDone && this.onbStep === 'ghost-flick' && id === 'window') {
+    // Onboarding ghost-flick completes when the window actually wakes by flick/voice/gaze.
+    if (woke && !this.persisted?.onboardingDone && this.onbStep === 'ghost-flick' && id === 'window') {
       this.onbStep = nextOnboarding(this.onbStep, 'wake:window');
       this.caption(onboardingCaption(this.onbStep));
     }
@@ -732,6 +735,10 @@ export class WordSystem extends createSystem({
       console.info('[Word] diorama moved onto real table');
       for (const r of this.tileRecs) r.home = { ...r.object.position };
     }
+
+    // Fallback table entity already is the 'table' WordTarget: a second scene
+    // marker for it would double-grade one word (two sleeping entities).
+    if (entry.id === 'table' && this.tableObject) { this.refreshQuest(false); return; }
 
     const material = new MeshStandardMaterial({ color: HUSH.clone(), emissive: HUSH.clone().multiplyScalar(0.25) });
     const marker = new Mesh(new SphereGeometry(0.05, 20, 16), material);

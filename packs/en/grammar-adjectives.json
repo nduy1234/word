@@ -13,7 +13,7 @@
       "example": "The apple is red.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/red.mp3",
+      "audio": "assets/audio/en-US/red.wav",
       "helper": {
         "es": "rojo",
         "vi": "đỏ"
@@ -28,7 +28,7 @@
       "example": "The cup is blue.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/blue.mp3",
+      "audio": "assets/audio/en-US/blue.wav",
       "helper": {
         "es": "azul",
         "vi": "xanh dương"
@@ -43,7 +43,7 @@
       "example": "The plant is green.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/green.mp3",
+      "audio": "assets/audio/en-US/green.wav",
       "helper": {
         "es": "verde",
         "vi": "xanh lá"
@@ -58,7 +58,7 @@
       "example": "The table is big.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/big.mp3",
+      "audio": "assets/audio/en-US/big.wav",
       "helper": {
         "es": "grande",
         "vi": "to"
@@ -73,7 +73,7 @@
       "example": "The chair is small.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/small.mp3",
+      "audio": "assets/audio/en-US/small.wav",
       "helper": {
         "es": "pequeño",
         "vi": "nhỏ"
@@ -88,7 +88,7 @@
       "example": "The cup is hot.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/hot.mp3",
+      "audio": "assets/audio/en-US/hot.wav",
       "helper": {
         "es": "caliente",
         "vi": "nóng"
@@ -103,7 +103,7 @@
       "example": "The apple is cold.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/cold.mp3",
+      "audio": "assets/audio/en-US/cold.wav",
       "helper": {
         "es": "frío",
         "vi": "lạnh"
@@ -118,7 +118,7 @@
       "example": "The book is new.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/new.mp3",
+      "audio": "assets/audio/en-US/new.wav",
       "helper": {
         "es": "nuevo",
         "vi": "mới"

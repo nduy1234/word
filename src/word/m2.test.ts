@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { gradeCard, isDue, newCard, fadeAmount } from './scheduler.js';
 import { matchTranscript, stressHint } from './matching.js';
 import { validatePack } from './pack-validate.js';
-import { ADJECTIVES, KITCHEN_PROPS, PHRASAL_VERBS, PREPOSITIONS, ROOM_WORDS, VERBS } from './pack.js';
+import { ADJECTIVES, CAFE_PROPS, KITCHEN_PROPS, PHRASAL_VERBS, PREPOSITIONS, ROOM_WORDS, VERBS } from './pack.js';
 import { buildDeck } from './deck.js';
 import { emptySave, fromTableRelative, load, save, toTableRelative } from './store.js';
 import { aimAssist, assistedDirection } from './aim-assist.js';
@@ -36,10 +36,11 @@ describe('pack validation', () => {
   it('all seed packs valid', () => {
     expect(validatePack(ROOM_WORDS, 'room')).toEqual([]);
     expect(validatePack(KITCHEN_PROPS, 'kitchen')).toEqual([]);
+    expect(validatePack(CAFE_PROPS, 'cafe')).toEqual([]);
     expect(validatePack([...VERBS, ...PHRASAL_VERBS, ...PREPOSITIONS, ...ADJECTIVES], 'grammar')).toEqual([]);
   });
-  it('catches duplicate, missing article, bad binding', () => {
-    const bad = [{ ...ROOM_WORDS[0] }, { ...ROOM_WORDS[0], article: undefined as never }];
+  it('catches duplicate, bad article, bad binding', () => {
+    const bad = [{ ...ROOM_WORDS[0] }, { ...ROOM_WORDS[0], article: 'the' as never }];
     expect(validatePack(bad).length).toBeGreaterThanOrEqual(2);
   });
 });

@@ -13,7 +13,7 @@
       "example": "Turn on the lamp.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/turn-on.mp3",
+      "audio": "assets/audio/en-US/turn-on.wav",
       "helper": {
         "es": "enciende",
         "vi": "bật"
@@ -28,7 +28,7 @@
       "example": "Turn off the lamp.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/turn-off.mp3",
+      "audio": "assets/audio/en-US/turn-off.wav",
       "helper": {
         "es": "apaga",
         "vi": "tắt"
@@ -43,7 +43,7 @@
       "example": "Pick up the cup.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/pick-up.mp3",
+      "audio": "assets/audio/en-US/pick-up.wav",
       "helper": {
         "es": "recoge",
         "vi": "nhặt lên"
@@ -58,7 +58,7 @@
       "example": "Put down the cup.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/put-down.mp3",
+      "audio": "assets/audio/en-US/put-down.wav",
       "helper": {
         "es": "deja",
         "vi": "đặt xuống"
@@ -73,7 +73,7 @@
       "example": "Look at the window.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/look-at.mp3",
+      "audio": "assets/audio/en-US/look-at.wav",
       "helper": {
         "es": "mira",
         "vi": "nhìn vào"
@@ -88,7 +88,7 @@
       "example": "Clean up the table.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/clean-up.mp3",
+      "audio": "assets/audio/en-US/clean-up.wav",
       "helper": {
         "es": "limpia",
         "vi": "dọn dẹp"

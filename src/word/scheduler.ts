@@ -16,6 +16,10 @@ export function newCard(wordId: string, now: number): CardState {
 export function gradeCard(card: CardState, grade: number, now: number): CardState {
   const g = Math.max(0, Math.min(5, Math.round(Number.isFinite(grade) ? grade : 0)));
   let { reps, ease, intervalDays, lapses } = card;
+  ease = Number.isFinite(ease) ? ease : 2.5;
+  intervalDays = Number.isFinite(intervalDays) ? intervalDays : 0;
+  reps = Number.isFinite(reps) ? reps : 0;
+  lapses = Number.isFinite(lapses) ? lapses : 0;
   ease = Math.max(1.3, ease + (0.1 - (5 - g) * (0.08 + (5 - g) * 0.02)));
   if (g < 3) {
     reps = 0;
@@ -36,5 +40,6 @@ export function isDue(card: CardState, now: number): boolean {
 export function fadeAmount(card: CardState, now: number, fadeWindowMs = 3 * 86_400_000): number {
   const overdue = now - card.dueAt;
   if (overdue <= 0) return 0;
+  if (!Number.isFinite(fadeWindowMs) || fadeWindowMs <= 0) return 1;
   return Math.min(1, overdue / fadeWindowMs);
 }

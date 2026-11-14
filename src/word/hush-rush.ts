@@ -4,7 +4,8 @@ export function newRush(best = 0): RushState { return { phase: 'idle', leftMs: 6
 export function startRush(s: RushState): RushState { return { ...newRush(s.best), phase: 'running' }; }
 export function tickRush(s: RushState, dtMs: number): RushState {
   if (s.phase !== 'running') return s;
-  const leftMs = Math.max(0, s.leftMs - dtMs);
+  const dt = Number.isFinite(dtMs) && dtMs > 0 ? dtMs : 0;
+  const leftMs = Math.max(0, s.leftMs - dt);
   return leftMs === 0 ? { ...s, leftMs, phase: 'done', best: Math.max(s.best, s.score) } : { ...s, leftMs };
 }
 export function pauseRush(s: RushState): RushState { return s.phase === 'running' ? { ...s, phase: 'paused' } : s; }

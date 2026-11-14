@@ -19,6 +19,9 @@ export function validatePack(words: WordEntry[], packId = 'pack'): string[] {
     if (w.cefr !== 'A1' && w.cefr !== 'A2') errors.push(`${t}: cefr must be A1|A2`);
     if (typeof w.helper?.es !== 'string' || !w.helper.es || typeof w.helper?.vi !== 'string' || !w.helper.vi) errors.push(`${t}: helper.es and helper.vi required`);
     if (typeof w.audio !== 'string' || !w.audio) errors.push(`${t}: audio path required`);
+    if (typeof w.wakeFx !== 'string' || !w.wakeFx) errors.push(`${t}: wakeFx required`);
+    if (!['common', 'rare', 'gold'].includes(w.rarity)) errors.push(`${t}: rarity invalid`);
+    if (w.plural !== undefined && (typeof w.plural !== 'string' || !w.plural)) errors.push(`${t}: plural must be a non-empty string`);
     if (typeof w.example === 'string' && w.example && typeof w.word === 'string' && w.word && !w.example.toLowerCase().includes(w.word.toLowerCase().split(' ')[0]))
       errors.push(`${t}: example must contain word`);
     const grammar = ['verb', 'phrasalVerb', 'preposition', 'adjective'].includes(w.partOfSpeech);
@@ -26,8 +29,9 @@ export function validatePack(words: WordEntry[], packId = 'pack'): string[] {
     if (!grammar && Boolean(w.sceneLabel) === Boolean(w.propId))
       errors.push(`${t}: exactly one of sceneLabel/propId required`);
     if (w.partOfSpeech === 'noun') {
-      if (w.article !== 'a' && w.article !== 'an') errors.push(`${t}: noun article must be stored as a|an`);
-      if (!w.plural) errors.push(`${t}: noun plural required`);
+      // Missing article = uncountable (milk, water; spell.ts gate): only reject a stored bad value.
+      if (w.article !== undefined && w.article !== 'a' && w.article !== 'an') errors.push(`${t}: noun article must be stored as a|an`);
+      if (!w.plural || typeof w.plural !== 'string') errors.push(`${t}: noun plural required`);
     }
   }
   return errors;

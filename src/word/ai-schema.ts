@@ -27,8 +27,9 @@ export function validateEchoResponse(v: unknown, knownIds: Set<string>): EchoRes
   const o = v as Record<string, unknown>;
   if (typeof o.line !== 'string' || !o.line.trim() || o.line.length > 160) return null;
   if (/[<>{}]/.test(o.line)) return null;
-  const newWordId = o.newWordId === null || o.newWordId === undefined ? null : o.newWordId;
-  if (newWordId !== null && !isValidId(newWordId)) return null;
+  const rawNew = o.newWordId === null || o.newWordId === undefined ? null : o.newWordId;
+  if (rawNew !== null && !isValidId(rawNew)) return null;
+  const newWordId: string | null = rawNew !== null && knownIds.has(rawNew as string) ? null : (rawNew as string | null); // already known != new
   if (!Array.isArray(o.spell) || o.spell.length > 8 || !o.spell.every((t) => typeof t === 'string' && t.length <= 30)) return null;
   return { line: o.line.trim(), newWordId, spell: o.spell as string[] };
 }

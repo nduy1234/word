@@ -16,7 +16,7 @@
       "propId": "cup",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/cup.mp3",
+      "audio": "assets/audio/en-US/cup.wav",
       "helper": {
         "es": "la taza",
         "vi": "cái cốc"
@@ -34,7 +34,7 @@
       "propId": "plate",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/plate.mp3",
+      "audio": "assets/audio/en-US/plate.wav",
       "helper": {
         "es": "el plato",
         "vi": "cái đĩa"
@@ -52,7 +52,7 @@
       "propId": "apple",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/apple.mp3",
+      "audio": "assets/audio/en-US/apple.wav",
       "helper": {
         "es": "la manzana",
         "vi": "quả táo"
@@ -70,7 +70,7 @@
       "propId": "chair",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/chair.mp3",
+      "audio": "assets/audio/en-US/chair.wav",
       "helper": {
         "es": "la silla",
         "vi": "cái ghế"
@@ -88,7 +88,7 @@
       "propId": "book",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/book.mp3",
+      "audio": "assets/audio/en-US/book.wav",
       "helper": {
         "es": "el libro",
         "vi": "quyển sách"

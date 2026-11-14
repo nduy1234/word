@@ -16,7 +16,7 @@
       "sceneLabel": "table",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/table.mp3",
+      "audio": "assets/audio/en-US/table.wav",
       "helper": {
         "es": "la mesa",
         "vi": "cái bàn"
@@ -34,7 +34,7 @@
       "sceneLabel": "wall",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/wall.mp3",
+      "audio": "assets/audio/en-US/wall.wav",
       "helper": {
         "es": "la pared",
         "vi": "bức tường"
@@ -52,7 +52,7 @@
       "sceneLabel": "floor",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/floor.mp3",
+      "audio": "assets/audio/en-US/floor.wav",
       "helper": {
         "es": "el suelo",
         "vi": "sàn nhà"
@@ -70,7 +70,7 @@
       "sceneLabel": "ceiling",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/ceiling.mp3",
+      "audio": "assets/audio/en-US/ceiling.wav",
       "helper": {
         "es": "el techo",
         "vi": "trần nhà"
@@ -88,7 +88,7 @@
       "sceneLabel": "door",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/door.mp3",
+      "audio": "assets/audio/en-US/door.wav",
       "helper": {
         "es": "la puerta",
         "vi": "cửa"
@@ -106,7 +106,7 @@
       "sceneLabel": "window",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/window.mp3",
+      "audio": "assets/audio/en-US/window.wav",
       "helper": {
         "es": "la ventana",
         "vi": "cửa sổ"
@@ -124,7 +124,7 @@
       "sceneLabel": "couch",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/couch.mp3",
+      "audio": "assets/audio/en-US/couch.wav",
       "helper": {
         "es": "el sofá",
         "vi": "ghế sofa"
@@ -142,7 +142,7 @@
       "sceneLabel": "lamp",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/lamp.mp3",
+      "audio": "assets/audio/en-US/lamp.wav",
       "helper": {
         "es": "la lámpara",
         "vi": "đèn"
@@ -160,7 +160,7 @@
       "sceneLabel": "plant",
       "wakeFx": "bloom",
       "rarity": "rare",
-      "audio": "audio/en-US/plant.mp3",
+      "audio": "assets/audio/en-US/plant.wav",
       "helper": {
         "es": "la planta",
         "vi": "cây"
@@ -178,7 +178,7 @@
       "sceneLabel": "screen",
       "wakeFx": "bloom",
       "rarity": "rare",
-      "audio": "audio/en-US/screen.mp3",
+      "audio": "assets/audio/en-US/screen.wav",
       "helper": {
         "es": "la pantalla",
         "vi": "màn hình"
@@ -196,7 +196,7 @@
       "sceneLabel": "bed",
       "wakeFx": "bloom",
       "rarity": "common",
-      "audio": "audio/en-US/bed.mp3",
+      "audio": "assets/audio/en-US/bed.wav",
       "helper": {
         "es": "la cama",
         "vi": "giường"
@@ -214,7 +214,7 @@
       "sceneLabel": "storage",
       "wakeFx": "bloom",
       "rarity": "rare",
-      "audio": "audio/en-US/shelf.mp3",
+      "audio": "assets/audio/en-US/shelf.wav",
       "helper": {
         "es": "la estantería",
         "vi": "kệ"

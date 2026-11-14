@@ -47,6 +47,7 @@ export function visitStreak(s: Streak, now: number): Streak {
   if (s.lastDay === today) return { ...s, freezesLeft, weekKey: wk };
   if (!s.lastDay) return { lastDay: today, count: 1, freezesLeft, weekKey: wk };
   const gap = Math.round((Date.parse(today) - Date.parse(s.lastDay)) / 864e5);
+  if (gap < 0) return { ...s, freezesLeft, weekKey: wk }; // clock rollback / future save: never wipe streak
   if (gap === 1) return { lastDay: today, count: s.count + 1, freezesLeft, weekKey: wk };
   if (gap === 2 && freezesLeft > 0) return { lastDay: today, count: s.count + 1, freezesLeft: freezesLeft - 1, weekKey: wk };
   return { lastDay: today, count: 1, freezesLeft, weekKey: wk };

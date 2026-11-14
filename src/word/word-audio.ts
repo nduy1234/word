@@ -8,7 +8,7 @@ export function audioChain(hasClip: boolean, hasTts: boolean): AudioStep[] {
   steps.push('caption');
   return steps;
 }
-/** Clip URL for pack audio field ("audio/en-US/cup.mp3") under public/. */
+/** Clip URL for pack audio field ("assets/audio/en-US/cup.wav") under public/. */
 export function clipUrl(audioField: string): string {
   return audioField.startsWith('/') ? audioField : `/${audioField}`;
 }

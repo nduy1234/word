@@ -13,7 +13,7 @@
       "example": "The cup is on the table.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/on.mp3",
+      "audio": "assets/audio/en-US/on.wav",
       "helper": {
         "es": "sobre",
         "vi": "trên"
@@ -28,7 +28,7 @@
       "example": "The apple is in the box.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/in.mp3",
+      "audio": "assets/audio/en-US/in.wav",
       "helper": {
         "es": "en",
         "vi": "trong"
@@ -43,7 +43,7 @@
       "example": "The cup is under the table.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/under.mp3",
+      "audio": "assets/audio/en-US/under.wav",
       "helper": {
         "es": "debajo de",
         "vi": "dưới"
@@ -58,7 +58,7 @@
       "example": "The chair is next to the table.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/next-to.mp3",
+      "audio": "assets/audio/en-US/next-to.wav",
       "helper": {
         "es": "al lado de",
         "vi": "bên cạnh"
@@ -73,7 +73,7 @@
       "example": "The chair is in front of the door.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/in-front-of.mp3",
+      "audio": "assets/audio/en-US/in-front-of.wav",
       "helper": {
         "es": "delante de",
         "vi": "trước"
@@ -88,7 +88,7 @@
       "example": "The chair is behind the door.",
       "wakeFx": "spell",
       "rarity": "common",
-      "audio": "audio/en-US/behind.mp3",
+      "audio": "assets/audio/en-US/behind.wav",
       "helper": {
         "es": "detrás de",
         "vi": "sau"
